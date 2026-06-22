@@ -1,0 +1,20 @@
+{
+  "name": "aetherclaw-extension",
+  "version": "2.0.0",
+  "private": true,
+  "description": "AetherClaw browser extension — MV3 (Chrome/Edge/Firefox)",
+  "scripts": {
+    "build": "node build.mjs",
+    "zip": "node build.mjs --zip",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "@aetherclaw/sdk": "file:../sdk"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

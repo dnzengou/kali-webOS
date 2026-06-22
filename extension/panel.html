@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AetherClaw Cockpit</title>
+    <link rel="stylesheet" href="panel.css" />
+  </head>
+  <body>
+    <header>
+      <h1>AetherClaw</h1>
+      <div id="status">idle</div>
+    </header>
+    <main>
+      <label>
+        Agent
+        <select id="agent"></select>
+      </label>
+      <label>
+        Prompt
+        <textarea id="prompt" rows="3" placeholder="Defaults to active tab URL"></textarea>
+      </label>
+      <div class="row">
+        <button id="run">Run</button>
+        <button id="abort" disabled>Abort</button>
+      </div>
+      <div id="steps"></div>
+    </main>
+    <script type="module" src="panel.js"></script>
+  </body>
+</html>

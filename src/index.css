@@ -1,0 +1,212 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 6%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 280 41% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 280 41% 53%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 280 41% 53%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground m-0 p-0 overflow-hidden;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .os-panel {
+    background: rgba(16, 16, 16, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .os-window {
+    background: #2d2d2d;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    border: 1px solid #3d3d3d;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .os-window-active {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(155, 89, 182, 0.2);
+  }
+
+  .os-titlebar {
+    background: #1a1a1a;
+    border-bottom: 1px solid #3d3d3d;
+    padding: 0 12px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+  }
+
+  .os-titlebar-active {
+    background: #2d2d2d;
+  }
+
+  .os-btn-close {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #e74c3c;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.15s;
+  }
+
+  .os-btn-close:hover {
+    background: #c0392b;
+  }
+
+  .os-btn-min {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #f39c12;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .os-btn-min:hover {
+    background: #d68910;
+  }
+
+  .os-btn-max {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #27ae60;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .os-btn-max:hover {
+    background: #1e8449;
+  }
+
+  .os-dock {
+    background: rgba(16, 16, 16, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 8px 16px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .os-app-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #2d2d2d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s ease-out, background 0.15s;
+    position: relative;
+  }
+
+  .os-app-icon:hover {
+    transform: scale(1.12);
+    background: #3d3d3d;
+  }
+
+  .os-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .os-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .os-scrollbar::-webkit-scrollbar-thumb {
+    background: #3d3d3d;
+    border-radius: 3px;
+  }
+
+  .os-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  .os-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    cursor: se-resize;
+    background: linear-gradient(135deg, transparent 50%, rgba(155, 89, 182, 0.4) 50%);
+    border-radius: 0 0 12px 0;
+    transition: opacity 0.15s;
+    opacity: 0;
+  }
+
+  .os-window:hover .os-resize-handle {
+    opacity: 1;
+  }
+
+  .terminal-text {
+    font-family: 'Fira Code', 'Cascadia Mono', 'Courier New', monospace;
+  }
+
+  /* Global thin scrollbar for all app content */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(155,89,182,0.5); }
+
+  /* Shake animation for login error */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    15%       { transform: translateX(-8px); }
+    30%       { transform: translateX( 8px); }
+    45%       { transform: translateX(-6px); }
+    60%       { transform: translateX( 6px); }
+    75%       { transform: translateX(-3px); }
+    90%       { transform: translateX( 3px); }
+  }
+  .animate-shake { animation: shake 0.55s ease-in-out; }
+
+  /* Pulsing purple glow for active windows */
+  .window-glow-enter {
+    animation: windowEnter 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  }
+  @keyframes windowEnter {
+    from { transform: scale(0.92); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
+}

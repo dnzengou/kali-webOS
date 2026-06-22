@@ -1,0 +1,39 @@
+[package]
+name = "kali-webos"
+version = "2.0.0"
+description = "Kali-webOS AetherClaw Edition — desktop & mobile shell"
+authors = ["Kali-webOS contributors"]
+license = "MIT"
+repository = "https://github.com/kali-webos/kali-webos"
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "kali_webos_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-os = "2"
+tauri-plugin-process = "2"
+tauri-plugin-clipboard-manager = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+incremental = false
+opt-level = "s"
+strip = true

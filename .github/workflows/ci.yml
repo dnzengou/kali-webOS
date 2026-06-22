@@ -1,0 +1,59 @@
+name: CI — lint, typecheck, build, test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Web (lint + typecheck + build)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "npm" }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run check
+      - run: npm run build
+      - run: npm test -- --reporter=verbose
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: dist
+          retention-days: 7
+
+  sdk:
+    name: SDK (build + test)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "npm", cache-dependency-path: sdk/package-lock.json }
+      - working-directory: sdk
+        run: |
+          npm install
+          npm run build
+          npm test
+
+  docker:
+    name: Docker (amd64 build smoke test)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: kali-webos:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

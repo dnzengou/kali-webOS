@@ -1,0 +1,24 @@
+{
+  "name": "@aetherclaw/cli",
+  "version": "2.0.0",
+  "description": "AetherClaw CLI — headless CoT multi-agent runner (Builder/Security/Deployer/Monitor/Optimizer).",
+  "type": "module",
+  "bin": {
+    "aetherclaw": "./dist/cli.js"
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "@aetherclaw/sdk": "file:../sdk"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "typescript": "~5.9.3"
+  },
+  "engines": { "node": ">=18" },
+  "keywords": ["ai", "agent", "cot", "cli", "security", "claude", "aetherclaw"],
+  "license": "MIT"
+}

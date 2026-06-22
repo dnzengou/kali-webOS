@@ -1,0 +1,56 @@
+{
+  "name": "aetherclaw-vscode",
+  "displayName": "AetherClaw — CoT Cockpit",
+  "version": "2.0.0",
+  "description": "Run AetherClaw CoT multi-agent (Builder/Security/Deployer/Monitor/Optimizer) from the command palette.",
+  "publisher": "kali-webos",
+  "license": "MIT",
+  "private": true,
+  "engines": { "vscode": "^1.85.0", "node": ">=18" },
+  "categories": ["AI", "Other"],
+  "keywords": ["ai", "agent", "cot", "security", "claude", "aetherclaw"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./dist/extension.js",
+  "repository": { "type": "git", "url": "https://github.com/kali-webos/aetherclaw-vscode" },
+  "contributes": {
+    "commands": [
+      { "command": "aetherclaw.run", "title": "AetherClaw: Run agent", "category": "AetherClaw" },
+      { "command": "aetherclaw.runOnSelection", "title": "AetherClaw: Run on selection", "category": "AetherClaw" },
+      { "command": "aetherclaw.openCockpit", "title": "AetherClaw: Open cockpit", "category": "AetherClaw" }
+    ],
+    "menus": {
+      "editor/context": [
+        { "command": "aetherclaw.runOnSelection", "when": "editorHasSelection", "group": "navigation@9" }
+      ]
+    },
+    "configuration": {
+      "title": "AetherClaw",
+      "properties": {
+        "aetherclaw.defaultAgent": {
+          "type": "string",
+          "enum": ["builder", "security", "deployer", "monitor", "optimizer"],
+          "default": "security",
+          "description": "Default agent profile."
+        },
+        "aetherclaw.timeoutMs": {
+          "type": "number",
+          "default": 45000,
+          "description": "Per-run timeout in milliseconds."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "package": "npx --yes @vscode/vsce package --no-dependencies",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "@aetherclaw/sdk": "file:../sdk"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.24.0",
+    "typescript": "~5.9.3"
+  }
+}

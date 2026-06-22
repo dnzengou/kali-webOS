@@ -1,0 +1,55 @@
+{
+  "packageId": "io.kaliwebos.aetherclaw",
+  "host": "kali-webos.io",
+  "name": "Kali-webOS — AetherClaw Edition",
+  "launcherName": "Kali-webOS",
+  "display": "standalone",
+  "orientation": "landscape",
+  "themeColor": "#9b59b6",
+  "navigationColor": "#0a0a1a",
+  "navigationColorDark": "#0a0a1a",
+  "navigationDividerColor": "#9b59b6",
+  "navigationDividerColorDark": "#9b59b6",
+  "backgroundColor": "#0a0a1a",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://kali-webos.io/icon-512.png",
+  "maskableIconUrl": "https://kali-webos.io/icon-512.png",
+  "monochromeIconUrl": "https://kali-webos.io/icon-512.png",
+  "shortcuts": [
+    {
+      "name": "Terminal",
+      "shortName": "Terminal",
+      "url": "/?app=terminal",
+      "chosenIconUrl": "https://kali-webos.io/icon-96.png"
+    },
+    {
+      "name": "Agent Chat",
+      "shortName": "Agent",
+      "url": "/?app=agentchat",
+      "chosenIconUrl": "https://kali-webos.io/icon-96.png"
+    }
+  ],
+  "appVersionName": "2.0.0",
+  "appVersionCode": 2,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "kaliwebos"
+  },
+  "splashScreenFadeOutDuration": 300,
+  "fallbackType": "customtabs",
+  "features": {
+    "playBilling": { "enabled": false },
+    "locationDelegation": { "enabled": false }
+  },
+  "alphaDependencies": { "enabled": false },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://kali-webos.io/",
+  "minSdkVersion": 23,
+  "orientation_strict": false,
+  "generatorApp": "bubblewrap-cli",
+  "additionalTrustedOrigins": [],
+  "retainedBundles": []
+}

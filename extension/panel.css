@@ -1,0 +1,68 @@
+:root {
+  color-scheme: dark;
+  --bg: #0a0e14;
+  --fg: #c8e6c9;
+  --accent: #00ff9c;
+  --panel: #111821;
+  --border: #1a2330;
+  --error: #ff6b6b;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font: 13px/1.4 ui-monospace, "JetBrains Mono", "Cascadia Code", monospace;
+  background: var(--bg);
+  color: var(--fg);
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+h1 { font-size: 14px; margin: 0; color: var(--accent); letter-spacing: 0.05em; }
+#status { font-size: 11px; opacity: 0.7; }
+main { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+label { display: flex; flex-direction: column; gap: 4px; font-size: 11px; opacity: 0.8; }
+select, textarea, button {
+  background: var(--panel);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font: inherit;
+}
+textarea { resize: vertical; }
+.row { display: flex; gap: 8px; }
+button { cursor: pointer; flex: 1; }
+button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+#steps { display: flex; flex-direction: column; gap: 8px; max-height: 70vh; overflow-y: auto; }
+.step {
+  border-left: 2px solid var(--border);
+  padding: 6px 8px;
+  background: var(--panel);
+}
+.step-think { border-left-color: #6ec1e4; }
+.step-tool_call { border-left-color: #ffd86b; }
+.step-final_answer, .step-final { border-left-color: var(--accent); }
+.step-error { border-left-color: var(--error); color: var(--error); }
+.step-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 2px;
+}
+.tool-result {
+  margin: 4px 0 0;
+  padding: 4px 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

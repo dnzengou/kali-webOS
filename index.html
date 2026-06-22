@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <!-- PWA -->
+    <meta name="theme-color" content="#9b59b6" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="KaliOS" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+
+    <!-- SEO / Social -->
+    <meta name="description" content="Kali WebOS — browser-based Linux desktop with AetherClaw CoT multi-agent AI, 59 apps, installable PWA." />
+    <meta property="og:title" content="Kali WebOS - AetherClaw Edition" />
+    <meta property="og:description" content="Browser-based Linux desktop with AI agents, terminal, security tools, games, and more." />
+    <meta property="og:type" content="website" />
+
+    <title>Kali WebOS - AetherClaw Edition</title>
+
+    <!-- SW registration — before module script so it's ready ASAP -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

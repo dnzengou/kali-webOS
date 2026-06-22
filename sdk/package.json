@@ -1,0 +1,63 @@
+{
+  "name": "@aetherclaw/sdk",
+  "version": "2.0.0",
+  "description": "AetherClaw CoT multi-agent SDK — chain-of-thought reasoning + simulated security/build/deploy tools. Extracted from Kali-webOS.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./tools": {
+      "types": "./dist/tools.d.ts",
+      "import": "./dist/tools.js",
+      "require": "./dist/tools.cjs"
+    },
+    "./agents": {
+      "types": "./dist/agents.d.ts",
+      "import": "./dist/agents.js",
+      "require": "./dist/agents.cjs"
+    }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsup src/index.ts src/tools.ts src/agents.ts --format esm,cjs --dts --clean",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "cot",
+    "chain-of-thought",
+    "multi-agent",
+    "claude",
+    "anthropic",
+    "security",
+    "kali",
+    "aetherclaw"
+  ],
+  "author": "Kali-webOS contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kali-webos/aetherclaw-sdk.git"
+  },
+  "homepage": "https://kali-webos.io/sdk",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "zod": "^3.22.0 || ^4.0.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "~5.9.3",
+    "vitest": "^4.0.16",
+    "zod": "^4.3.5"
+  }
+}

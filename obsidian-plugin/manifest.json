@@ -1,0 +1,10 @@
+{
+  "id": "aetherclaw",
+  "name": "AetherClaw",
+  "version": "2.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "Run AetherClaw CoT multi-agent on note selection — security recon, build/deploy planning, code audit.",
+  "author": "Kali-webOS contributors",
+  "authorUrl": "https://kali-webos.io",
+  "isDesktopOnly": false
+}
