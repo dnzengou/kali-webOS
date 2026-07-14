@@ -7,7 +7,7 @@ const PRESETS: { label: string; pattern: string; flags: string }[] = [
   { label: "Integer",      pattern: "-?\\d+",                                    flags: "g"  },
   { label: "Float",        pattern: "-?\\d+\\.\\d+",                             flags: "g"  },
   { label: "Email",        pattern: "[\\w.+-]+@[\\w-]+\\.[\\w.]+",               flags: "gi" },
-  { label: "URL",          pattern: "https?://[\\w/:%#$&?()~.=+\\-]+",           flags: "g"  },
+  { label: "URL",          pattern: "https?://[\\w/:%#$&?()~.=+-]+",             flags: "g"  },
   { label: "IPv4",         pattern: "\\b(\\d{1,3}\\.){3}\\d{1,3}\\b",           flags: "g"  },
   { label: "IPv6",         pattern: "([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}",  flags: "gi" },
   { label: "Hex color",    pattern: "#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\\b",     flags: "gi" },

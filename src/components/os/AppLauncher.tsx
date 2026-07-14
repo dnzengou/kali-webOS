@@ -106,7 +106,6 @@ export default function AppLauncher() {
         style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}
       >
         {apps.map((app, idx) => {
-          const Icon = app.icon;
           const isCursor = idx === cursor;
           return (
             <button
@@ -130,7 +129,7 @@ export default function AppLauncher() {
                     : "none",
                 }}
               >
-                <Icon
+                <app.icon
                   size={24}
                   className="transition-colors duration-100"
                   style={{ color: isCursor ? "#c084fc" : "rgba(255,255,255,0.6)" }}

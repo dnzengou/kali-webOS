@@ -49,6 +49,24 @@ function generate(
 
 interface HistoryEntry { pwd: string; copied: boolean; }
 
+function Toggle({ label, val, set }: { label: string; val: boolean; set: (v: boolean) => void }) {
+  return (
+    <button onClick={() => set(!val)}
+      className="flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] transition-all"
+      style={{
+        background: val ? "rgba(168,85,247,0.12)" : "rgba(255,255,255,0.04)",
+        border: `1px solid ${val ? "rgba(168,85,247,0.35)" : "rgba(255,255,255,0.07)"}`,
+        color: val ? "#c084fc" : "rgba(255,255,255,0.4)",
+      }}>
+      <span className={`w-3 h-3 rounded-sm border flex items-center justify-center transition-all ${val ? "border-[#a855f7]" : "border-white/25"}`}
+        style={{ background: val ? "#a855f7" : "transparent" }}>
+        {val && <Check size={8} />}
+      </span>
+      {label}
+    </button>
+  );
+}
+
 export default function PassGen() {
   const [len,     setLen]     = useState(20);
   const [upper,   setUpper]   = useState(true);
@@ -105,22 +123,6 @@ export default function PassGen() {
       "#fb923c";
     return <span key={i} style={{ color }}>{c}</span>;
   });
-
-  const Toggle = ({ label, val, set }: { label: string; val: boolean; set: (v: boolean) => void }) => (
-    <button onClick={() => set(!val)}
-      className="flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] transition-all"
-      style={{
-        background: val ? "rgba(168,85,247,0.12)" : "rgba(255,255,255,0.04)",
-        border: `1px solid ${val ? "rgba(168,85,247,0.35)" : "rgba(255,255,255,0.07)"}`,
-        color: val ? "#c084fc" : "rgba(255,255,255,0.4)",
-      }}>
-      <span className={`w-3 h-3 rounded-sm border flex items-center justify-center transition-all ${val ? "border-[#a855f7]" : "border-white/25"}`}
-        style={{ background: val ? "#a855f7" : "transparent" }}>
-        {val && <Check size={8} />}
-      </span>
-      {label}
-    </button>
-  );
 
   return (
     <div className="h-full flex flex-col" style={{ background: "#0a0a0e", color: "white" }}>

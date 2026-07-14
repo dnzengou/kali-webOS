@@ -11,6 +11,20 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+function BatteryBar({ battery, charging }: { battery: number | null; charging: boolean }) {
+  if (battery === null) return null;
+  const color = battery <= 20 ? "#ef4444" : battery <= 40 ? "#f59e0b" : "#22c55e";
+  return (
+    <div className="flex items-center gap-1" title={`${battery}%${charging ? " ⚡" : ""}`}>
+      <div className="relative w-5 h-2.5 rounded-sm border border-white/30 overflow-hidden">
+        <div className="absolute inset-0" style={{ background: color, width: `${battery}%`, transition: "width 1s" }} />
+      </div>
+      <div className="w-0.5 h-1.5 rounded-r bg-white/30" />
+      <span className="text-[10px] text-white/50">{battery}%</span>
+    </div>
+  );
+}
+
 export default function TopBar() {
   const [time,    setTime]    = useState(new Date());
   const [panel,   setPanel]   = useState(false);
@@ -61,20 +75,6 @@ export default function TopBar() {
     return () => document.removeEventListener("mousedown", handler);
   }, [panel]);
 
-  const BatteryBar = () => {
-    if (battery === null) return null;
-    const color = battery <= 20 ? "#ef4444" : battery <= 40 ? "#f59e0b" : "#22c55e";
-    return (
-      <div className="flex items-center gap-1" title={`${battery}%${charging ? " ⚡" : ""}`}>
-        <div className="relative w-5 h-2.5 rounded-sm border border-white/30 overflow-hidden">
-          <div className="absolute inset-0" style={{ background: color, width: `${battery}%`, transition: "width 1s" }} />
-        </div>
-        <div className="w-0.5 h-1.5 rounded-r bg-white/30" />
-        <span className="text-[10px] text-white/50">{battery}%</span>
-      </div>
-    );
-  };
-
   return (
     <>
       <div
@@ -122,7 +122,7 @@ export default function TopBar() {
               Install App
             </button>
           )}
-          <BatteryBar />
+          <BatteryBar battery={battery} charging={charging} />
           <button
             className="flex items-center gap-1.5 text-white/55 hover:text-white/90 px-2 py-1 rounded-md hover:bg-white/8 transition-all"
             onClick={() => setPanel((p) => !p)}

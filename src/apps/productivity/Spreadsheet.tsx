@@ -5,7 +5,7 @@ export default function Spreadsheet() {
   const [data,setData] = useState<Record<string,string>>({"A1":"Name","B1":"Value","A2":"Revenue","B2":"100000","A3":"Expenses","B3":"75000","A4":"Profit","B4":"=B2-B3"});
   const [sel,setSel] = useState("A1");
   const val = data[sel] || "";
-  const compute = (v: string, _cell: string) => {
+  const compute = (v: string) => {
     if (v.startsWith("=")) {
       try {
         const expr = v.slice(1).replace(/([A-Z]+\d+)/g, (m) => data[m] || "0");
@@ -23,7 +23,7 @@ export default function Spreadsheet() {
           {COLS.map(c=><div key={c} className="bg-[#1a1a1a] text-white/50 text-[10px] text-center py-1 sticky top-0">{c}</div>)}
           {Array.from({length:ROWS},(_,r)=>r+1).flatMap(r=>[
             <div key={`r${r}`} className="bg-[#1a1a1a] text-white/50 text-[10px] text-center py-1 sticky left-0">{r}</div>,
-            ...COLS.map(c=>{const computed=compute(data[`${c}${r}`]||"",`${c}${r}`);return(<div key={`${c}${r}`} className={`border-r border-b border-[#3d3d3d] px-1 py-1 text-[11px] truncate cursor-pointer ${sel===`${c}${r}`?"bg-[#9b59b6]/20 border border-[#9b59b6]":"text-white/80 hover:bg-white/5"}`} onClick={()=>setSel(`${c}${r}`)}>{computed}</div>);})
+            ...COLS.map(c=>{const computed=compute(data[`${c}${r}`]||"");return(<div key={`${c}${r}`} className={`border-r border-b border-[#3d3d3d] px-1 py-1 text-[11px] truncate cursor-pointer ${sel===`${c}${r}`?"bg-[#9b59b6]/20 border border-[#9b59b6]":"text-white/80 hover:bg-white/5"}`} onClick={()=>setSel(`${c}${r}`)}>{computed}</div>);})
           ])}
         </div>
       </div>

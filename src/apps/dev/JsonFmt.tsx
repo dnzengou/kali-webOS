@@ -60,7 +60,7 @@ function highlightJson(text: string): React.JSX.Element[] {
 
       // Number
       if ((ch >= "0" && ch <= "9") || (ch === "-" && line[i + 1] >= "0" && line[i + 1] <= "9")) {
-        let j = i; while (j < line.length && /[\d.eE+\-]/.test(line[j])) j++;
+        let j = i; while (j < line.length && /[\d.eE+-]/.test(line[j])) j++;
         push(line.slice(i, j), C.num, i); i = j; continue;
       }
 

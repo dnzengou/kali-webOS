@@ -32,7 +32,7 @@ const SCI_ROWS = [
 
 function evaluate(expr: string): string {
   try {
-    let e = expr
+    const e = expr
       .replace(/÷/g,  "/")
       .replace(/×/g,  "*")
       .replace(/−/g,  "-")
@@ -44,7 +44,6 @@ function evaluate(expr: string): string {
       .replace(/tan\(([^)]+)\)/g, (_, n) => String(Math.tan(parseFloat(n) * Math.PI / 180)))
       .replace(/log\(([^)]+)\)/g, (_, n) => String(Math.log10(parseFloat(n))))
       .replace(/ln\(([^)]+)\)/g,  (_, n) => String(Math.log(parseFloat(n))));
-    // eslint-disable-next-line no-new-func
     const result = new Function("return " + e)();
     if (typeof result !== "number" || !isFinite(result)) return "Error";
     return String(Number(result.toFixed(10)));

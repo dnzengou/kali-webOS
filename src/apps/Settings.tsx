@@ -72,6 +72,22 @@ function Row({ label, sub, right }: { label: string; sub?: string; right: React.
   );
 }
 
+function SliderRow({ label, sub, value, onChange, color = "#9b59b6" }: {
+  label: string; sub?: string; value: number; onChange: (v: number) => void; color?: string;
+}) {
+  return (
+    <div className="py-2.5 px-4 rounded-xl space-y-2"
+      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+      <div className="flex justify-between">
+        <div><p className="text-[13px] text-white/80">{label}</p>{sub && <p className="text-[11px] text-white/35">{sub}</p>}</div>
+        <span className="text-[13px] text-white/50 tabular-nums">{value}%</span>
+      </div>
+      <input type="range" min={0} max={100} value={value} onChange={(e) => onChange(+e.target.value)}
+        className="w-full h-1.5 rounded-full appearance-none cursor-pointer" style={{ accentColor: color }} />
+    </div>
+  );
+}
+
 export default function Settings() {
   const [active, setActive] = useState("wifi");
   const [brightness, setBrightness] = useState(80);
@@ -86,20 +102,6 @@ export default function Settings() {
   const [wallpaper,  setWallpaper]  = useState(0);
   const [accent,     setAccent]     = useState("#9b59b6");
   const [showKey,    setShowKey]    = useState(false);
-
-  const SliderRow = ({ label, sub, value, onChange, color = "#9b59b6" }: {
-    label: string; sub?: string; value: number; onChange: (v: number) => void; color?: string;
-  }) => (
-    <div className="py-2.5 px-4 rounded-xl space-y-2"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-      <div className="flex justify-between">
-        <div><p className="text-[13px] text-white/80">{label}</p>{sub && <p className="text-[11px] text-white/35">{sub}</p>}</div>
-        <span className="text-[13px] text-white/50 tabular-nums">{value}%</span>
-      </div>
-      <input type="range" min={0} max={100} value={value} onChange={(e) => onChange(+e.target.value)}
-        className="w-full h-1.5 rounded-full appearance-none cursor-pointer" style={{ accentColor: color }} />
-    </div>
-  );
 
   return (
     <div className="h-full flex text-[13px]" style={{ background: "#111" }}>
