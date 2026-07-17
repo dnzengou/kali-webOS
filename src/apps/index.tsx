@@ -72,6 +72,7 @@ const ChessApp = lazy(() => import("./games/Chess"));
 const PongApp = lazy(() => import("./games/Pong"));
 const SudokuApp = lazy(() => import("./games/Sudoku"));
 
+const AutoClawDemoApp = lazy(() => import("./agent/AutoClawDemo"));
 const AgentChatApp = lazy(() => import("./agent/AgentChat"));
 const PipelineApp = lazy(() => import("./agent/Pipeline"));
 const CoTTraceApp = lazy(() => import("./agent/CoTTrace"));
@@ -141,6 +142,7 @@ const APP_COMPONENTS: Record<string, React.FC> = {
   chess: ChessApp,
   pong: PongApp,
   sudoku: SudokuApp,
+  autoclaw: AutoClawDemoApp,
   agentchat: AgentChatApp,
   pipeline: PipelineApp,
   cottrace: CoTTraceApp,

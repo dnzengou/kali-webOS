@@ -12,7 +12,7 @@ import {
   Regex, BookMarked, GitBranch, Send, Pipette,
   Type, QrCode, GitCompare, Gamepad2, Puzzle,
   Grid3X3, Bomb, Swords, Trophy, BrainCircuit,
-  Workflow, GitGraph, Sparkles, Cpu,
+  Workflow, GitGraph, Sparkles, Cpu, Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -109,6 +109,7 @@ export const APP_REGISTRY: AppRegistryEntry[] = [
   { id: "sudoku", name: "Sudoku", icon: BrainCircuit, category: "Games", defaultWidth: 450, defaultHeight: 500, description: "Sudoku puzzle" },
 
   // Agent (AetherClaw)
+  { id: "autoclaw", name: "AutoClaw Demo", icon: Zap, category: "Agent", defaultWidth: 700, defaultHeight: 600, description: "One-click AI agent showcase — no auth needed" },
   { id: "agentchat", name: "Agent Chat", icon: Sparkles, category: "Agent", defaultWidth: 700, defaultHeight: 550, description: "AetherClaw agent chat" },
   { id: "pipeline", name: "Pipeline", icon: Workflow, category: "Agent", defaultWidth: 800, defaultHeight: 550, description: "CI/CD agent pipeline" },
   { id: "cottrace", name: "CoT Trace", icon: GitGraph, category: "Agent", defaultWidth: 800, defaultHeight: 550, description: "Chain-of-thought trace" },
