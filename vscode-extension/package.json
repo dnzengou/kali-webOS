@@ -46,7 +46,7 @@
     "lint": "eslint src/"
   },
   "dependencies": {
-    "@aetherclaw/sdk": "file:../sdk"
+    "@aetherclaw/sdk": "*"
   },
   "devDependencies": {
     "@types/vscode": "^1.85.0",

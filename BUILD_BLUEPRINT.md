@@ -286,37 +286,35 @@ Build -> Test -> Security Scan -> Deploy -> Monitor
 
 ## 6. PWA / SDK / Distribution Matrix (v2.0.0 — Multi-target + Evolve)
 
-**Ten** independent distribution channels share one source tree. All ship native ARM64 + x86_64 where applicable.
+**Eight** independent distribution channels share one source tree and one npm-workspace install. All ship native ARM64 + x86_64 where applicable.
 
 | Target | Tech | Output | Size | ARM64 | Source |
 |---|---|---|---|---|---|
 | PWA | Service worker + manifest | Installable web app | ~200 KB shell | ✅ | `public/manifest.json`, `public/sw.js` |
 | Desktop (Win/Mac/Linux) | Tauri 2.0 + Rust | `.msi`, `.exe`, `.dmg`, `.app`, `.deb`, `.rpm`, `.AppImage` | 8–15 MB | ✅ native | `src-tauri/` |
-| Android APK (full) | Tauri Mobile + Rust + NDK | `.apk`, `.aab` | 10–18 MB | ✅ native | `src-tauri/` |
-| Android APK (lightweight) | Bubblewrap (TWA) | `.apk`, `.aab` | ~200 KB shell | ✅ | `dist-apk/twa-manifest.json` |
-| iOS | Tauri Mobile + Swift | `.ipa` | 10–18 MB | ✅ native | `src-tauri/` |
+| Android APK | Bubblewrap (TWA) | `.apk`, `.aab` | ~200 KB shell | ✅ | `dist-apk/twa-manifest.json` |
+| iOS (scaffolded) | Tauri Mobile + Swift | `.ipa` | 10–18 MB | ✅ native | `src-tauri/` |
 | Container | Docker multi-arch | OCI image at `ghcr.io/<owner>/kali-webos` | ~80 MB compressed | ✅ buildx | `Dockerfile`, `docker-compose.yml` |
-| NPM SDK | `tsup` ESM+CJS | `@aetherclaw/sdk` on npmjs.com | ~12 KB gzip | n/a | `sdk/` |
+| NPM SDK + `aetherclaw` CLI | `tsup` ESM+CJS+bin | `@aetherclaw/sdk` on npmjs.com | ~14 KB gzip | n/a | `sdk/` |
 | **Browser extension** (MV3) | esbuild | `.zip` (Chrome/Edge/Firefox) | ~25 KB | n/a | `extension/` |
 | **VS Code extension** | esbuild + vsce | `.vsix` | ~30 KB | n/a | `vscode-extension/` |
 | **Obsidian plugin** | esbuild | `.zip` (desktop + mobile) | ~25 KB | ✅ | `obsidian-plugin/` |
-| **CLI binary** | esbuild | `@aetherclaw/cli` on npmjs.com | ~15 KB gzip | n/a | `cli/` |
 
 ### 6.1 PWA
 - Display: `standalone`, theme `#9b59b6`, icons 72–512
 - Shortcuts: Terminal, Agent Chat
 - SW: precache + stale-while-revalidate + offline SPA fallback + push-ready
 
-### 6.2 Tauri Desktop & Mobile
+### 6.2 Tauri Desktop (+ iOS scaffold)
 - Config: `src-tauri/tauri.conf.json` — strict CSP, frozen prototypes, scoped FS protocol
 - Capabilities: `src-tauri/capabilities/default.json` — minimum permission surface (no `shell:execute`, FS scoped to `$APPDATA`)
 - Plugins: shell-open, dialog, fs, os, process, clipboard-manager
 - Build:
   ```bash
   npm run tauri:build              # desktop binary for current host
-  npm run tauri:android:build      # APK + AAB
   npm run tauri:ios:build          # IPA (requires macOS)
   ```
+- **Android via Tauri is intentionally dropped** — Bubblewrap TWA (§6.3) is the sole Android path. Rationale: 200 KB shell vs 12 MB native binary, no NDK toolchain overhead, no Rust-Android matrix in CI.
 
 ### 6.3 Bubblewrap TWA (lightest APK path)
 - Wraps the deployed PWA in a 200 KB Trusted Web Activity shell
@@ -331,9 +329,10 @@ Build -> Test -> Security Scan -> Deploy -> Monitor
 - Build: `npm run docker:build` (buildx, amd64 + arm64)
 - Compose: `docker-compose.yml` with MySQL 8.4 service
 
-### 6.5 NPM SDK — `@aetherclaw/sdk`
+### 6.5 NPM SDK — `@aetherclaw/sdk` (ships the `aetherclaw` CLI)
 - Pure-TS CoT engine + 10 simulated tools + 5 agent profiles, zero native deps
 - Targets: Node 18+, Bun, Deno, browsers, edge runtimes, Tauri webview
+- **CLI shipped as `bin`**: `npx @aetherclaw/sdk` or `npm i -g @aetherclaw/sdk` → `aetherclaw` command. `@aetherclaw/cli` as a separate package was folded in on 2026-07-17.
 - Entry points: `.` (default), `./tools`, `./agents`
 - Build: `npm run sdk:build` (tsup ESM+CJS+dts)
 - Publish: tagged release → GitHub Actions → npm (`--provenance`)
@@ -354,18 +353,18 @@ Build -> Test -> Security Scan -> Deploy -> Monitor
 
 ### 6.7 Evolve channels — architecture invariant
 
-All four evolve channels (`extension`, `vscode-extension`, `obsidian-plugin`, `cli`) consume
-the **same** `@aetherclaw/sdk` package as a file dependency. The CoT engine, agent profiles, and
-tool definitions live in exactly **one** place — `sdk/src/`. Each channel is a thin shell:
+All three evolve channels (`extension`, `vscode-extension`, `obsidian-plugin`) consume the
+**same** `@aetherclaw/sdk` package via npm workspaces (`"@aetherclaw/sdk": "*"` → symlink
+into root `node_modules/`). The CoT engine, agent profiles, tool definitions, and the
+`aetherclaw` CLI live in exactly **one** place — `sdk/src/`. Each channel is a thin shell:
 
 ```
 extension/        ─┐
-vscode-extension/ ─┼─▶ @aetherclaw/sdk ─▶ runCoT() + profiles + tools
-obsidian-plugin/  ─┤
-cli/              ─┘
+vscode-extension/ ─┼─▶ @aetherclaw/sdk ─▶ runCoT() + profiles + tools + cli bin
+obsidian-plugin/  ─┘
 ```
 
-Rule: **never duplicate CoT logic into a channel.** If an evolve channel needs new behavior, lift it into the SDK first.
+Rule: **never duplicate CoT logic into a channel.** If an evolve channel needs new behavior, lift it into the SDK first. The CLI is not a channel — it's the SDK's `bin` entry.
 
 ---
 
@@ -394,13 +393,13 @@ GitHub Actions in `.github/workflows/`:
 | Workflow | Trigger | Outputs |
 |---|---|---|
 | `ci.yml` | push / PR | Lint + typecheck + web build + SDK build + Docker smoke |
-| `release.yml` | tag `v*.*.*` or manual | Tauri desktop ×6, Tauri APK+AAB, Bubblewrap APK, Docker amd64+arm64 → GHCR, SDK + CLI → npm, browser ext .zip, VS Code .vsix, Obsidian .zip, GitHub Release (14+ artifacts) |
+| `release.yml` | tag `v*.*.*` or manual | Tauri desktop ×6, Bubblewrap APK, Docker amd64+arm64 → GHCR, SDK (+ `aetherclaw` CLI bin) → npm, browser ext .zip, VS Code .vsix, Obsidian .zip, GitHub Release (11+ artifacts) |
 | `security.yml` | push / PR / weekly cron | CodeQL JS/TS · npm audit · Trivy FS + container scan → SARIF |
 
 ### 8.3 Release flow
 ```bash
 git tag v2.0.0
-git push --tags          # triggers release.yml → 14+ artifacts in one run
+git push --tags          # triggers release.yml → 11+ artifacts in one run
 ```
 
 ---
@@ -422,19 +421,26 @@ git push --tags          # triggers release.yml → 14+ artifacts in one run
 | Service worker + offline support | ✅ |
 | Push notification ready | ✅ |
 | Tauri 2 — desktop binaries (Win/Mac/Linux × x64/arm64) | ✅ scaffolded |
-| Tauri 2 — Android APK / iOS IPA | ✅ scaffolded |
+| Tauri 2 — iOS IPA | ✅ scaffolded |
 | Bubblewrap TWA — lightweight Play Store APK | ✅ scaffolded |
 | Docker multi-arch (amd64 + arm64), distroless | ✅ |
-| `@aetherclaw/sdk` — standalone CoT engine | ✅ |
+| `@aetherclaw/sdk` — standalone CoT engine (+ `aetherclaw` CLI bin) | ✅ |
 | **Browser extension** (Chrome/Edge/Firefox MV3, side panel cockpit) | ✅ |
 | **VS Code extension** (palette + webview cockpit, .vsix) | ✅ |
 | **Obsidian plugin** (note → CoT callout, desktop + mobile) | ✅ |
-| **`@aetherclaw/cli`** (headless NDJSON runner, pipe-safe) | ✅ |
+| npm-workspaces (single lockfile, hoisted deps) | ✅ |
 | GitHub Actions — CI / release / security | ✅ |
 
 ---
 
 ## 10. Changelog
+
+### v2.0.0 — 2026-07-17 · Streamline pass (workspaces + CLI-fold + Tauri-Android cut)
+- **npm workspaces.** Root `package.json` now declares `workspaces: [sdk, extension, vscode-extension, obsidian-plugin]`. Sub-packages depend on `@aetherclaw/sdk: "*"` (symlinked). Single lockfile, single hoisted `node_modules`. Disk footprint of evolve tree: **215 MB → ~55 MB**.
+- **CLI folded into SDK.** `cli/` deleted. `sdk/package.json` gains `"bin": { "aetherclaw": "./dist/cli.js" }` and tsup builds `src/cli.ts` alongside library entries. `npx @aetherclaw/sdk` and `npm i -g @aetherclaw/sdk` give you `aetherclaw`.
+- **Tauri Android dropped.** `tauri:android:*` scripts removed. `tauri-android` job removed from `release.yml`. Bubblewrap TWA remains the sole Android path (200 KB shell vs 12 MB native — cheaper CI, no NDK toolchain).
+- **Release matrix compact.** 10 channels → 8. Release job's `needs` no longer references `tauri-android` or `cli-publish`. 4 fewer CI jobs per tag.
+- Synced `DISTRIBUTION.md`, `BUILD_BLUEPRINT.md` (this file), section 6.7 architecture invariant (four channels → three).
 
 ### v2.0.0 — 2026-06-22 · Evolve channels (extension / vscode / obsidian / cli)
 - Added `extension/` — MV3 browser extension. Side-panel cockpit + service-worker SDK host. Strict CSP (`script-src 'self'; object-src 'self'; frame-ancestors 'none'`). Minimum permissions (`storage`, `sidePanel`, `activeTab`, `scripting`).

@@ -91,45 +91,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
-  # ─── 2. Tauri Android APK + AAB ──────────────────────────────────────
-  tauri-android:
-    name: Android — Tauri APK/AAB
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: "${{ env.NODE_VERSION }}", cache: "npm" }
-      - uses: actions/setup-java@v4
-        with: { distribution: "temurin", java-version: "17" }
-      - uses: android-actions/setup-android@v3
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android
-      - uses: nttld/setup-ndk@v1
-        with: { ndk-version: r26d }
-      - run: npm ci
-      - name: Init Android project
-        run: npx tauri android init
-        env:
-          NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-      - name: Build APK + AAB
-        run: npx tauri android build --apk --aab
-        env:
-          NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: android-tauri
-          path: |
-            src-tauri/gen/android/app/build/outputs/apk/**/*.apk
-            src-tauri/gen/android/app/build/outputs/bundle/**/*.aab
-          if-no-files-found: warn
-
-  # ─── 3. Bubblewrap APK (lightweight TWA) ─────────────────────────────
+  # ─── 2. Bubblewrap APK (lightweight TWA — sole Android path) ─────────
   bubblewrap-apk:
     name: Android — Bubblewrap (TWA)
     runs-on: ubuntu-22.04
@@ -159,7 +121,7 @@ jobs:
           path: dist-apk/*.apk
           if-no-files-found: warn
 
-  # ─── 4. Docker multi-arch → GHCR ─────────────────────────────────────
+  # ─── 3. Docker multi-arch → GHCR ─────────────────────────────────────
   docker:
     name: Docker (amd64 + arm64) → GHCR
     runs-on: ubuntu-22.04
@@ -195,7 +157,7 @@ jobs:
           provenance: true
           sbom: true
 
-  # ─── 5. NPM SDK publish ──────────────────────────────────────────────
+  # ─── 4. NPM SDK publish (bundles the `aetherclaw` CLI as `bin`) ──────
   sdk-publish:
     name: SDK → npm
     runs-on: ubuntu-22.04
@@ -206,99 +168,76 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
-      - working-directory: sdk
-        run: |
-          npm ci
-          npm run build
-          npm publish --provenance --access public
+          cache: "npm"
+      - run: npm ci
+      - run: npm run sdk:build
+      - name: Publish
+        working-directory: sdk
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  # ─── 6. Browser extension (Chrome/Edge/Firefox MV3) ──────────────────
+  # ─── 5. Browser extension (Chrome/Edge/Firefox MV3) ──────────────────
   extension:
     name: Extension — MV3 zip
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "${{ env.NODE_VERSION }}" }
-      - working-directory: sdk
-        run: npm ci && npm run build
-      - working-directory: extension
+        with: { node-version: "${{ env.NODE_VERSION }}", cache: "npm" }
+      - run: npm ci
+      - run: npm run sdk:build
+      - run: npm run ext:build
+      - name: Package extension
         run: |
-          npm ci
-          npm run build
-          cd dist && zip -r ../../aetherclaw-extension-${GITHUB_REF_NAME#v}.zip .
+          cd extension/dist && zip -r ../../aetherclaw-extension-${GITHUB_REF_NAME#v}.zip .
       - uses: actions/upload-artifact@v4
         with:
           name: browser-extension
           path: aetherclaw-extension-*.zip
 
-  # ─── 7. VS Code extension (VSIX) ─────────────────────────────────────
+  # ─── 6. VS Code extension (VSIX) ─────────────────────────────────────
   vscode-extension:
     name: VS Code — VSIX
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "${{ env.NODE_VERSION }}" }
-      - working-directory: sdk
-        run: npm ci && npm run build
-      - working-directory: vscode-extension
-        run: |
-          npm ci
-          npm run build
-          npx --yes @vscode/vsce package --no-dependencies --out aetherclaw-vscode.vsix
+        with: { node-version: "${{ env.NODE_VERSION }}", cache: "npm" }
+      - run: npm ci
+      - run: npm run sdk:build
+      - run: npm run vscode:build
+      - name: Package VSIX
+        working-directory: vscode-extension
+        run: npx --yes @vscode/vsce package --no-dependencies --out aetherclaw-vscode.vsix
       - uses: actions/upload-artifact@v4
         with:
           name: vscode-extension
           path: vscode-extension/*.vsix
 
-  # ─── 8. Obsidian plugin ──────────────────────────────────────────────
+  # ─── 7. Obsidian plugin ──────────────────────────────────────────────
   obsidian-plugin:
     name: Obsidian — plugin zip
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "${{ env.NODE_VERSION }}" }
-      - working-directory: sdk
-        run: npm ci && npm run build
-      - working-directory: obsidian-plugin
+        with: { node-version: "${{ env.NODE_VERSION }}", cache: "npm" }
+      - run: npm ci
+      - run: npm run sdk:build
+      - run: npm run obsidian:build
+      - name: Package plugin
         run: |
-          npm ci
-          npm run build
-          cd dist && zip -r ../../obsidian-aetherclaw-${GITHUB_REF_NAME#v}.zip .
+          cd obsidian-plugin/dist && zip -r ../../obsidian-aetherclaw-${GITHUB_REF_NAME#v}.zip .
       - uses: actions/upload-artifact@v4
         with:
           name: obsidian-plugin
           path: obsidian-aetherclaw-*.zip
 
-  # ─── 9. CLI → npm ────────────────────────────────────────────────────
-  cli-publish:
-    name: CLI → npm
-    runs-on: ubuntu-22.04
-    if: startsWith(github.ref, 'refs/tags/v')
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          registry-url: "https://registry.npmjs.org"
-      - working-directory: sdk
-        run: npm ci && npm run build
-      - working-directory: cli
-        run: |
-          npm ci
-          npm run build
-          npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  # ─── 10. GitHub Release — gather all artifacts ───────────────────────
+  # ─── 8. GitHub Release — gather all artifacts ────────────────────────
   release:
     name: GitHub Release
-    needs: [tauri-desktop, tauri-android, bubblewrap-apk, docker, extension, vscode-extension, obsidian-plugin]
+    needs: [tauri-desktop, bubblewrap-apk, docker, extension, vscode-extension, obsidian-plugin]
     runs-on: ubuntu-22.04
     if: startsWith(github.ref, 'refs/tags/v')
     steps:

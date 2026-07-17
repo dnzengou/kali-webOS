@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-import { createAetherClaw, type AgentType, type CoTStep } from "@aetherclaw/sdk";
+import { createAetherClaw } from "./client.js";
+import type { AgentType } from "./agents.js";
+import type { CoTStep } from "./cot.js";
 
 interface Args {
   agent: AgentType;

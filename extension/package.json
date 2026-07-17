@@ -9,7 +9,7 @@
     "lint": "eslint src/"
   },
   "dependencies": {
-    "@aetherclaw/sdk": "file:../sdk"
+    "@aetherclaw/sdk": "*"
   },
   "devDependencies": {
     "esbuild": "^0.24.0"
