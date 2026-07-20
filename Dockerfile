@@ -1,4 +1,4 @@
-syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1.7
 # Multi-arch (linux/amd64, linux/arm64) production image for Kali-webOS
 # Build: docker buildx build --platform linux/amd64,linux/arm64 -t kali-webos:2.0.0 .
 
