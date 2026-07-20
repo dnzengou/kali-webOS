@@ -439,6 +439,26 @@ git push --tags          # triggers release.yml → 11+ artifacts in one run
 
 ## 10. Changelog
 
+### v2.0.0 — 2026-07-20 · First real deploy — remote wired, release matrix fired (partial)
+
+- **Remote `dnzengou/kali-webOS` wired** (private). Auto-generated `Initial commit` `263368b` overwritten with the real 7-commit history via `--force-with-lease` (safe overwrite, no upstream contributors). First push CI (run `29740099947`) exposed 3 pre-existing blockers.
+- **Docs pin** — [`SECURITY.md`](.github/SECURITY.md) placeholders resolved: `OWNER/kali-webos` → `dnzengou/kali-webOS`, `<owner>` → `dnzengou`. Disclosure URL and GHCR image reference now click through.
+- **Tauri real icon set landed** (closes `task_393aad9b` spawn) — `src-tauri/aetherclaw-master.svg` (1024×1024 vector master) + rasterised PNG feed `npx @tauri-apps/cli icon`, producing: desktop PNGs (32/64/128/128@2x/icon), `icon.icns`, `icon.ico`, Windows Store tiles (Square30/44/71/89/107/142/150/284/310), full iOS AppIcon set (20/29/40/60/76/83.5/512), Android adaptive icons (mdpi/hdpi/xhdpi/xxhdpi/xxxhdpi + `anydpi-v26/ic_launcher.xml` + background XML). `tauri.conf.json` `bundle.icon` array restored to include `.icns` and `.ico`; `bundle.windows.nsis.installerIcon` restored.
+- **CI-repair — 3 first-push blockers fixed** (run `29740099947` → `29740706841` green):
+  - `Dockerfile` line 1: `syntax=docker/dockerfile:1.7` → `# syntax=docker/dockerfile:1.7`. Missing `#` prefix made BuildKit parse it as an instruction.
+  - Root `vitest.config.ts` gained `passWithNoTests: true` — `api/**` test include pattern currently matches nothing (no server-side tests yet).
+  - `sdk/package.json` test script → `vitest run --passWithNoTests`.
+- **v2.0.0 tag pushed** (commit `9293194`) → release matrix (`29740907769`) fired 12 jobs. Result: **4 succeeded, 8 failed, GitHub Release skipped** (its `needs:` gate blocks on any matrix failure). Concrete state:
+  - ✅ Docker (amd64+arm64) → GHCR — `ghcr.io/dnzengou/kali-webos:2.0.0` published.
+  - ✅ Browser extension MV3 zip, VS Code VSIX, Obsidian plugin zip — all three evolve channels uploaded as workflow artifacts (30-day retention).
+  - ❌ SDK → npm — `ENEEDAUTH`. Missing `NPM_TOKEN` repo secret. **User action:** set NPM_TOKEN in `Settings → Secrets → Actions`. Blocks `@aetherclaw/sdk` from publishing.
+  - ❌ Desktop × 6 (macOS/Linux/Windows × x64/arm64) — Rust compile error `E0433: cannot find module or crate tauri_plugin_window_state`. Local Cargo.lock (untracked) resolves fine; CI's fresh resolve fails. **Root cause TBD** — likely feature-flag or version-resolution drift. Filed as follow-up.
+  - ❌ Android — Bubblewrap TWA — exit 130 (SIGINT). `bubblewrap init` prompted `Do you want Bubblewrap to install the JDK?` and the non-interactive runner killed it. **Fix:** pass `--jdkFolderPath="$JAVA_HOME"` to bypass the prompt. Also gated on real keystore + assetlinks.json SHA-256 (`task_880d0d91` still open).
+- **Post-deploy audit (E pass, quick):** No new attack surface introduced by session commits. Secrets sweep clean (no `sk-ant`/API tokens in tracked files). Existing code smells (Calculator `new Function("return "+e)()`, XssScan payload literals) both pre-existing and scoped (Calculator = local sandbox, XssScan = explicitly out-of-scope per SECURITY.md). One `console.log` in `api/boot.ts:71` — legitimate startup port log.
+- **Dependabot immediately opened 3 PRs** on first push (`dependabot/npm_and_yarn/react-*`, `dependabot/github_actions/actions-*`, `dependabot/docker/node-26-alpine`) — kafcade v2.9 first-CI-burst rule expected. Left for triage.
+
+**How to apply:** v2.0.0 is *partially* shipped — Docker+GHCR is production-live and consumable via `docker pull ghcr.io/dnzengou/kali-webos:2.0.0`. The three evolve channels have artifacts on the workflow run (`29740907769`) but no GitHub Release attachment (matrix gate). Desktop/Android/npm require the follow-ups listed above. Do not re-tag v2.0.0 after fixes — cut `v2.0.1` on the fix commit so the release matrix re-runs cleanly.
+
 ### v2.0.0 — 2026-07-20 · Prod-release hardening (dependabot + SECURITY.md + CI sdk workspace fix)
 - **Security defaults shipped alongside distribution channels** (P0 gap per kafcade v2.9 rule — first-CI-burst budget applies for the next 24 h):
   - Added `.github/dependabot.yml` — weekly npm + github-actions + docker updates, grouped by ecosystem (react / radix / trpc / tailwind / dev-deps / actions / docker) to cut PR churn ~10 → ~3/week without slowing failure detection. `recharts` major-version bumps ignored (Monitor app's charting library, held at v2 intentionally).
