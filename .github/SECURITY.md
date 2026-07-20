@@ -10,7 +10,7 @@
 ## Reporting a Vulnerability
 
 Report vulnerabilities privately via GitHub Security Advisories:
-**https://github.com/OWNER/kali-webos/security/advisories/new**
+**https://github.com/dnzengou/kali-webOS/security/advisories/new**
 
 Or email **security@kali-webos.io** (PGP available on request).
 
@@ -28,7 +28,7 @@ In scope:
 - Web app (`src/`, `api/`)
 - `@aetherclaw/sdk` package
 - Browser extension, VS Code extension, Obsidian plugin
-- Docker image (`ghcr.io/<owner>/kali-webos`)
+- Docker image (`ghcr.io/dnzengou/kali-webos`)
 - Bubblewrap TWA APK (`dist-apk/`)
 
 Out of scope:
