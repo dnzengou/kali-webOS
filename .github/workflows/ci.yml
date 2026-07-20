@@ -30,17 +30,15 @@ jobs:
           retention-days: 7
 
   sdk:
-    name: SDK (build + test)
+    name: SDK (build + test via workspace)
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "22", cache: "npm", cache-dependency-path: sdk/package-lock.json }
-      - working-directory: sdk
-        run: |
-          npm install
-          npm run build
-          npm test
+        with: { node-version: "22", cache: "npm" }
+      - run: npm ci
+      - run: npm run sdk:build
+      - run: npm test --workspace @aetherclaw/sdk --if-present
 
   docker:
     name: Docker (amd64 build smoke test)

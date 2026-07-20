@@ -52,3 +52,12 @@ coverage/
 src-tauri/target/
 src-tauri/gen/
 
+# Signing material — NEVER commit
+*.keystore
+*.jks
+*.p12
+*.pfx
+*.pem
+*.key
+dist-apk/android.keystore
+

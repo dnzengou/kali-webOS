@@ -9,11 +9,15 @@ export const passwordRouter = createRouter({
   list: authedQuery.query(async ({ ctx }) => {
     const db = getDb();
     const rows = await db.select().from(passwords).where(eq(passwords.userId, ctx.user.id)).orderBy(desc(passwords.createdAt));
+    const safeDecrypt = (blob: string | null): string | null => {
+      if (!blob) return null;
+      try { return decrypt(blob); } catch { return null; }
+    };
     return rows.map((r) => ({
       ...r,
-      password: decrypt(r.password),
-      username: r.username ? decrypt(r.username) : null,
-      notes:    r.notes    ? decrypt(r.notes)    : null,
+      password: safeDecrypt(r.password) ?? "",
+      username: safeDecrypt(r.username),
+      notes:    safeDecrypt(r.notes),
     }));
   }),
 

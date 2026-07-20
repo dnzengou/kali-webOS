@@ -10,10 +10,20 @@ import { Paths } from "@contracts/constants";
 
 const RATE_WINDOW_MS = 60_000;
 const RATE_LIMIT     = 120;
+const RATE_MAP_MAX   = 10_000;
 const rateMap        = new Map<string, { count: number; resetAt: number }>();
 
-function getClientIp(req: Request): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+function getClientIp(req: Request, remoteAddr?: string): string {
+  const fwd = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  if (fwd) return fwd;
+  const real = req.headers.get("x-real-ip")?.trim();
+  if (real) return real;
+  return remoteAddr ?? "unknown";
+}
+
+function sweepRateMap(now: number): void {
+  if (rateMap.size < RATE_MAP_MAX) return;
+  for (const [k, v] of rateMap) if (now > v.resetAt) rateMap.delete(k);
 }
 
 const app = new Hono<{ Bindings: HttpBindings }>();
@@ -21,19 +31,20 @@ const app = new Hono<{ Bindings: HttpBindings }>();
 app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
 
 app.use("/api/*", async (c, next) => {
-  const ip  = getClientIp(c.req.raw);
   const now = Date.now();
+  sweepRateMap(now);
+  const ip = getClientIp(c.req.raw, c.env?.incoming?.socket?.remoteAddress);
   let entry = rateMap.get(ip);
   if (!entry || now > entry.resetAt) {
     entry = { count: 0, resetAt: now + RATE_WINDOW_MS };
     rateMap.set(ip, entry);
   }
   entry.count++;
-  c.header("X-RateLimit-Limit",     String(RATE_LIMIT));
-  c.header("X-RateLimit-Remaining", String(Math.max(0, RATE_LIMIT - entry.count)));
   if (entry.count > RATE_LIMIT) {
     return c.json({ error: "Too Many Requests" }, 429);
   }
+  c.header("X-RateLimit-Limit",     String(RATE_LIMIT));
+  c.header("X-RateLimit-Remaining", String(Math.max(0, RATE_LIMIT - entry.count)));
   return next();
 });
 

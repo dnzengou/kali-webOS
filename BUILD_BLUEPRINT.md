@@ -2,7 +2,7 @@
 ## Build Blueprint
 
 **Version**: 2.0.0
-**Date**: 2026-06-22
+**Date**: 2026-07-20
 **Stack**: React 19 + TypeScript + Vite + Tailwind CSS + shadcn/ui + tRPC + Drizzle ORM + Hono + MySQL
 **Total Apps**: 59 across 9 categories
 **Docs**: [README.md](README.md) · [HOWTO.md](HOWTO.md) · [DISTRIBUTION.md](DISTRIBUTION.md) · this blueprint
@@ -395,6 +395,7 @@ GitHub Actions in `.github/workflows/`:
 | `ci.yml` | push / PR | Lint + typecheck + web build + SDK build + Docker smoke |
 | `release.yml` | tag `v*.*.*` or manual | Tauri desktop ×6, Bubblewrap APK, Docker amd64+arm64 → GHCR, SDK (+ `aetherclaw` CLI bin) → npm, browser ext .zip, VS Code .vsix, Obsidian .zip, GitHub Release (11+ artifacts) |
 | `security.yml` | push / PR / weekly cron | CodeQL JS/TS · npm audit · Trivy FS + container scan → SARIF |
+| `dependabot.yml` | weekly | Grouped bumps: react · radix · trpc · tailwind · dev-deps · gh-actions · docker |
 
 ### 8.3 Release flow
 ```bash
@@ -430,10 +431,22 @@ git push --tags          # triggers release.yml → 11+ artifacts in one run
 | **Obsidian plugin** (note → CoT callout, desktop + mobile) | ✅ |
 | npm-workspaces (single lockfile, hoisted deps) | ✅ |
 | GitHub Actions — CI / release / security | ✅ |
+| Dependabot (grouped: react / radix / trpc / tailwind / dev-deps / actions / docker) | ✅ |
+| Vulnerability disclosure policy (`.github/SECURITY.md`) | ✅ |
+| **AutoClaw demo app** — zero-auth client-side CoT showcase (5 scenarios) | ✅ |
 
 ---
 
 ## 10. Changelog
+
+### v2.0.0 — 2026-07-20 · Prod-release hardening (dependabot + SECURITY.md + CI sdk workspace fix)
+- **Security defaults shipped alongside distribution channels** (P0 gap per kafcade v2.9 rule — first-CI-burst budget applies for the next 24 h):
+  - Added `.github/dependabot.yml` — weekly npm + github-actions + docker updates, grouped by ecosystem (react / radix / trpc / tailwind / dev-deps / actions / docker) to cut PR churn ~10 → ~3/week without slowing failure detection. `recharts` major-version bumps ignored (Monitor app's charting library, held at v2 intentionally).
+  - Added `.github/SECURITY.md` — vulnerability disclosure policy: 72 h ack, 14 d fix SLA for high/critical, GitHub Security Advisories + PGP-optional email path, in-scope/out-of-scope explicitly enumerated, hardening summary appended.
+- **CI SDK job fixed** — `sdk/package-lock.json` cache reference removed (workspace has no separate lockfile). Now runs `npm ci` from root, then `npm run sdk:build`, then `npm test --workspace @aetherclaw/sdk --if-present`.
+- **AutoClaw demo app** promoted to Feature Matrix — zero-auth client-side CoT showcase, no dead endpoints (pure `setTimeout` step replay), verified 2026-07-20.
+- **Full B+P+D+Ci+E+Bl cascade** run — TS check clean, lint 0 errors (22 expected warnings), vite build 14.8 s / 198 KB gz initial, SDK build 163 ms ESM + 3.15 s dts, all three evolve channels (extension/vscode/obsidian) built green, APK path (Bubblewrap TWA) config verified.
+- **Distribution readiness gate:** local commit + local tag → P/D partial per kafcade v2.5 no-remote honesty rule. Wire `git remote add origin <url> && git push -u origin main && git tag v2.0.0 && git push --tags` to trigger the full release matrix (14+ artifacts).
 
 ### v2.0.0 — 2026-07-17 · Streamline pass (workspaces + CLI-fold + Tauri-Android cut)
 - **npm workspaces.** Root `package.json` now declares `workspaces: [sdk, extension, vscode-extension, obsidian-plugin]`. Sub-packages depend on `@aetherclaw/sdk: "*"` (symlinked). Single lockfile, single hoisted `node_modules`. Disk footprint of evolve tree: **215 MB → ~55 MB**.
