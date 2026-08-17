@@ -12,9 +12,9 @@
     "@aetherclaw/sdk": "*"
   },
   "devDependencies": {
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.28.2",
     "obsidian": "^1.4.16",
-    "typescript": "~5.9.3"
+    "typescript": "~7.0.2"
   },
   "engines": { "node": ">=18" }
 }
