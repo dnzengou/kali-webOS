@@ -439,6 +439,27 @@ git push --tags          # triggers release.yml → 11+ artifacts in one run
 
 ## 10. Changelog
 
+### v2.0.0 — 2026-08-05 · E+Ci+B+Bl cascade @ c43f811 (RRSS/ARM/EvoForge/EvoMetaClaw/KafCa/KafCade)
+
+- **E audit** — main `c43f811` typecheck-clean (`npm run check` exit 0). `src-tauri/Cargo.toml` confirms `af09c2b` landed: `tauri = { version = "2", features = ["protocol-asset"] }` + `tauri-plugin-window-state = "2"` (Desktop x6 matrix E0433 blocker resolved). `security.yml` correctly pinned to `aquasecurity/trivy-action@v0.36.0` (post PR #13 merge). No new attack surface. RRSS 8/8 pillars intact.
+- **Ci health** — last 10 main runs: 9 green, 1 red (`Security — SAST + deps + container scan` run `30803535691` on 2026-08-03T09:56:45Z; likely a real CRITICAL/HIGH vuln finding — expected resolution via dependabot PR merges).
+- **kafcade v2.9 FIRST-CI-BURST rule VIOLATED** — window opened 2026-07-20, expected close 2026-07-21. Actual: still burning at 2026-08-05 with **7 open dependabot PRs** (#1 node-alpine, #3 react, #4 radix, #5 trpc, #7 dev-deps, #14 actions, #15 lucide-react major) + 2 user-authored PRs stalled (#9 v2.0.2 bubblewrap + #10 SDK metadata). Chronic burst, 16 days.
+- **B — no code shipped this cascade (LESS-IS-MORE)**. Proposed target (bubblewrap `--jdkFolderPath` fix per §10 2026-07-20 entry) turned out wrong: PR #9 body verifies the flag doesn't exist on `bubblewrap init`; real fix is config pre-seed + `update --skipVersionUpgrade` + localhost iconUrl server. That fix already lives on PR #9, verified green in workflow run `29749088809`. Reinventing it on main would fork the branch — chipped triage of PR #9/#10 instead.
+- **Follow-ups (spawned as background chips)**:
+  1. Merge/rebase PR #9 + #10 (v2.0.2 backfill — bubblewrap fix + SDK metadata).
+  2. Triage 7 stale dependabot PRs (close FIRST-CI-BURST window).
+
+```
+evo-metaclaw-lineage-note (2026-08-05)
+  product: kali-webOS AetherClaw Edition
+  product-shape: Node+Vite+Tauri hybrid (Rust in src-tauri/, Node in root/api/sdk/extension/vscode-extension/obsidian-plugin) — likely a NEW shape vs evo-forge's seven; parent is closest to kafcade v3.6 MCP-plugin (both multi-distribution-channel from one source) but with sibling Rust binary target added
+  signal: FIRST-CI-BURST window (kafcade v2.9) violated at 16 days — 7 dependabot + 2 user PRs still open on a project whose changelog explicitly documented the burst rule. Rule holds descriptively; enforcement gap: nothing auto-escalates when the 24h window overshoots.
+  mutation candidate for evo-metaclaw next append:
+    FIRST-CI-BURST-CHRONIC-DETECTION — when a project's E audit finds N>3 dependabot PRs open >7 days AFTER the FIRST-CI-BURST window was documented, escalate to explicit TRIAGE-PHASE-OF-CASCADE rather than folding into Bl. The 24h rule is a target, not a ceiling; chronic overshoot needs its own operator.
+  ARM lens: Analogical parallel is Debian's package-freeze windows before a release — Debian's "unstable → testing" freeze eventually forces a manual triage phase to close open bumps. AetherClaw's release matrix is at the same structural moment.
+  Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+```
+
 ### v2.0.0 — 2026-07-20 · First real deploy — remote wired, release matrix fired (partial)
 
 - **Remote `dnzengou/kali-webOS` wired** (private). Auto-generated `Initial commit` `263368b` overwritten with the real 7-commit history via `--force-with-lease` (safe overwrite, no upstream contributors). First push CI (run `29740099947`) exposed 3 pre-existing blockers.
