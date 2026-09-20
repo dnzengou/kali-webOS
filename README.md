@@ -4,12 +4,13 @@ A production-ready web-based Linux desktop environment running entirely in your 
 
 **Live**: https://cccytvbv5uiq6.kimi.page
 **Stack**: React 19 · TypeScript · Vite 7 · Tailwind 3 · tRPC 11 · Drizzle ORM · Hono · MySQL 8 · PWA
-**Distribution**: PWA · Desktop (Tauri) · Android (Tauri + Bubblewrap) · iOS (Tauri) · Docker · NPM SDK
+**Distribution**: PWA · Tauri desktop · Bubblewrap Android APK · Docker (amd64+arm64) · `@aetherclaw/sdk` (npm + CLI) · Browser extension · VS Code extension · Obsidian plugin
 
-> **New here?** Three docs to know:
+> **New here?** Four docs to know:
 > - **README.md** (this file) — what it is, how to use it, how to develop it
-> - **[HOWTO.md](HOWTO.md)** — task-oriented recipes ("how do I …?")
-> - **[DISTRIBUTION.md](DISTRIBUTION.md)** — packaging matrix for the six release channels
+> - **[INSTALL.md](INSTALL.md)** — pick a standalone install path by use case
+> - **[HOWTO.md](HOWTO.md)** — task-oriented developer recipes ("how do I …?")
+> - **[DISTRIBUTION.md](DISTRIBUTION.md)** — packaging matrix for all eight release channels
 > - **[BUILD_BLUEPRINT.md](BUILD_BLUEPRINT.md)** — full architecture, schema, roadmap, changelog
 
 ---
@@ -103,10 +104,13 @@ npm run build        # 4. Production build smoke
 | **Try without installing** | Hosted PWA | https://cccytvbv5uiq6.kimi.page |
 | **Local dev / contribute code** | `npm run dev` | http://localhost:5173 |
 | **CI / pre-merge gate** | GitHub Actions | `.github/workflows/ci.yml` runs `npm run check` + lint + test + build |
-| **Production self-host** | Docker | `docker compose up` (see [DISTRIBUTION.md](DISTRIBUTION.md) §4) |
-| **Desktop install** | Tauri binary | `npm run tauri:build` (see [DISTRIBUTION.md](DISTRIBUTION.md) §1) |
-| **Mobile install** | Tauri APK / TWA | `npm run tauri:android:build` or `npm run apk:twa` |
-| **Embed CoT in another app** | `@aetherclaw/sdk` | `npm i @aetherclaw/sdk` (see [DISTRIBUTION.md](DISTRIBUTION.md) §5) |
+| **Production self-host** | Docker | `docker compose up` (see [INSTALL §4](INSTALL.md#4-self-host-docker--compose)) |
+| **Desktop install** | PWA or Tauri binary | see [INSTALL §2](INSTALL.md#2-desktop-app-pwa-or-tauri) |
+| **Mobile install** | PWA "Add to Home Screen" or Bubblewrap TWA | see [INSTALL §3](INSTALL.md#3-phone--tablet-pwa-or-twa-apk) |
+| **Cockpit in the browser / editor / vault** | Extension · VS Code · Obsidian | see [INSTALL §6–§8](INSTALL.md#6-browser-cockpit-extension) |
+| **Embed CoT in another app** | `@aetherclaw/sdk` | `npm i @aetherclaw/sdk` (see [INSTALL §9](INSTALL.md#9-embed-the-sdk)) |
+| **Script in shell / CI** | `aetherclaw` CLI | `npx @aetherclaw/sdk` (see [INSTALL §10](INSTALL.md#10-cli-in-shell--ci)) |
+| **Air-gapped / offline** | Self-hosted + PWA cache | see [INSTALL §11](INSTALL.md#11-offline--air-gapped) |
 
 ---
 

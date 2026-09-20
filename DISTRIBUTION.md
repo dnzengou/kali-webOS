@@ -2,6 +2,9 @@
 
 Kali-webOS v2.0.0 ships in **eight independent formats** from one source tree. Pick the one that fits.
 
+> **Just installing, not building?** Jump to [INSTALL.md](INSTALL.md) — the same
+> matrix organised by end-user use case with first-run steps and gotchas.
+
 | Format | Best for | Build command | First build needs |
 |---|---|---|---|
 | PWA | Casual users, instant try | `npm run build` then host `dist/public/` | — |
