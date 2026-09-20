@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Deep aether background gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#2a1244"/>
+      <stop offset="55%" stop-color="#160828"/>
+      <stop offset="100%" stop-color="#0a0416"/>
+    </radialGradient>
+
+    <!-- Violet border gradient -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="50%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+
+    <!-- Bold K gradient with bevel feel -->
+    <linearGradient id="kGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d8b4fe"/>
+      <stop offset="45%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+
+    <!-- Terminal green gradient -->
+    <linearGradient id="termGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#86efac"/>
+      <stop offset="100%" stop-color="#22c55e"/>
+    </linearGradient>
+
+    <!-- Claw slash gradient -->
+    <linearGradient id="clawGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f0abfc" stop-opacity="0.0"/>
+      <stop offset="40%" stop-color="#e879f9" stop-opacity="0.55"/>
+      <stop offset="60%" stop-color="#e879f9" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#f0abfc" stop-opacity="0.0"/>
+    </linearGradient>
+
+    <!-- Aether glow (K halo) -->
+    <filter id="aetherGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Soft outer glow for border -->
+    <filter id="borderGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Terminal glow -->
+    <filter id="termGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Rounded-square clip so gradient + claws stay inside the frame -->
+    <clipPath id="squircleClip">
+      <rect x="72" y="72" width="880" height="880" rx="168" ry="168"/>
+    </clipPath>
+  </defs>
+
+  <!-- FRAME + BACKGROUND -->
+  <!-- Filled squircle background -->
+  <rect x="72" y="72" width="880" height="880" rx="168" ry="168" fill="url(#bgGrad)"/>
+
+  <!-- Clipped scene: claw slashes crossing the K -->
+  <g clip-path="url(#squircleClip)">
+    <!-- Diagonal claw slashes (top-left → bottom-right) -->
+    <g transform="rotate(28 512 512)">
+      <rect x="70"  y="380" width="884" height="18" rx="9" fill="url(#clawGrad)"/>
+      <rect x="70"  y="460" width="884" height="14" rx="7" fill="url(#clawGrad)"/>
+      <rect x="70"  y="540" width="884" height="18" rx="9" fill="url(#clawGrad)"/>
+      <rect x="70"  y="620" width="884" height="12" rx="6" fill="url(#clawGrad)"/>
+    </g>
+
+    <!-- Subtle scanline texture for the "aether" feel -->
+    <g opacity="0.05">
+      <rect x="72" y="72"  width="880" height="880" fill="none"/>
+      <line x1="72" y1="200" x2="952" y2="200" stroke="#c084fc" stroke-width="1"/>
+      <line x1="72" y1="360" x2="952" y2="360" stroke="#c084fc" stroke-width="1"/>
+      <line x1="72" y1="520" x2="952" y2="520" stroke="#c084fc" stroke-width="1"/>
+      <line x1="72" y1="680" x2="952" y2="680" stroke="#c084fc" stroke-width="1"/>
+      <line x1="72" y1="840" x2="952" y2="840" stroke="#c084fc" stroke-width="1"/>
+    </g>
+  </g>
+
+  <!-- OUTER BORDER (on top so it stays crisp) -->
+  <rect x="72" y="72" width="880" height="880" rx="168" ry="168"
+        fill="none" stroke="url(#borderGrad)" stroke-width="20"
+        filter="url(#borderGlow)"/>
+
+  <!-- Inner accent line, tighter than border, softer -->
+  <rect x="112" y="112" width="800" height="800" rx="140" ry="140"
+        fill="none" stroke="#7c3aed" stroke-width="3" opacity="0.5"/>
+
+  <!-- THE K -->
+  <!--
+    K composed as filled path so it renders identically without needing fonts.
+    Centered around x=512. Height roughly 500 (y 258..758).
+  -->
+  <g filter="url(#aetherGlow)">
+    <path d="
+        M 300 258
+        L 430 258
+        L 430 470
+        L 640 258
+        L 800 258
+        L 555 505
+        L 810 758
+        L 640 758
+        L 430 545
+        L 430 758
+        L 300 758
+        Z
+      "
+      fill="url(#kGrad)"
+      stroke="#3b0764" stroke-width="6" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Highlight edge on the K's left stem for a subtle bevel -->
+  <path d="M 306 264 L 424 264 L 424 758 L 306 758 Z"
+        fill="url(#kGrad)" opacity="0.0"/>
+  <path d="M 306 264 L 320 264 L 320 758 L 306 758 Z"
+        fill="#e9d5ff" opacity="0.35"/>
+
+  <!-- TERMINAL PROMPT $_ -->
+  <g filter="url(#termGlow)" font-family="Consolas, 'Courier New', monospace"
+     font-weight="700" font-size="128" text-anchor="middle" fill="url(#termGrad)">
+    <text x="512" y="880">$_</text>
+  </g>
+
+  <!-- Small blinking-cursor block next to $ for extra "live terminal" hint -->
+  <rect x="580" y="810" width="34" height="70" rx="4" fill="#4ade80" opacity="0.85"
+        filter="url(#termGlow)"/>
+</svg>

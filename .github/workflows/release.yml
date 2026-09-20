@@ -48,7 +48,7 @@ jobs:
             tauri-args: "--target aarch64-pc-windows-msvc"
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Linux build deps
         if: startsWith(matrix.os, 'ubuntu')
@@ -56,7 +56,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libgtk-3-dev
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -77,7 +77,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: desktop-${{ matrix.target }}
           path: |
@@ -96,29 +96,89 @@ jobs:
     name: Android — Bubblewrap (TWA)
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: "${{ env.NODE_VERSION }}" }
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with: { distribution: "temurin", java-version: "17" }
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
       - run: npm i -g @bubblewrap/cli
-      - name: Decode keystore
+
+      - name: Pre-seed bubblewrap config (bypass interactive JDK/SDK install prompt)
+        run: |
+          # Without ~/.bubblewrap/config.json, the CLI prompts "Do you want Bubblewrap
+          # to install the JDK?" on every invocation, which hangs a headless runner
+          # (exit 130 — see run 29740907769). Pre-writing the config with the runner's
+          # pre-installed JDK 17 + Android SDK skips both prompts.
+          mkdir -p ~/.bubblewrap
+          printf '{"jdkPath":"%s","androidSdkPath":"%s"}\n' \
+            "$JAVA_HOME" "$ANDROID_HOME" > ~/.bubblewrap/config.json
+          cat ~/.bubblewrap/config.json
+
+      - name: Serve manifest icons locally (kali-webos.io not yet live)
+        run: |
+          # bubblewrap fetches iconUrl / maskableIconUrl / shortcuts.chosenIconUrl over
+          # HTTP to embed in the Android project. The production origin isn't reachable
+          # yet, so serve public/ on localhost and rewrite the manifest to match.
+          python3 -m http.server 8765 --directory public > /tmp/icons-http.log 2>&1 &
+          echo $! > /tmp/icons-http.pid
+          for _ in 1 2 3 4 5; do
+            curl -sSf --max-time 2 http://localhost:8765/icon-512.png > /dev/null && break
+            sleep 1
+          done
+
+      - name: Rewrite twa-manifest.json icon URLs to localhost
+        working-directory: dist-apk
+        run: |
+          sed -i 's|https://kali-webos.io/icon-|http://localhost:8765/icon-|g' twa-manifest.json
+
+      - name: Decode keystore (if secret provided)
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
         run: |
           if [ -n "$KEYSTORE_B64" ]; then
             echo "$KEYSTORE_B64" | base64 -d > dist-apk/android.keystore
           fi
+
       - name: Build TWA APK
         working-directory: dist-apk
+        env:
+          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
+          # `bubblewrap update` reads the local twa-manifest.json (non-interactive with
+          # --skipVersionUpgrade), unlike `init` which treats --manifest as a URL and
+          # prompts to confirm every TWA field. Generates the Android project + checksum
+          # file so the follow-up `build` doesn't prompt for confirmation.
+          bubblewrap update --skipVersionUpgrade
+          # `--skipSigning` produces an unsigned aligned APK — sufficient to prove the
+          # CI plumbing works. The real Play-Store-signed build is blocked on the
+          # assetlinks.json SHA-256 (still "REPLACE_WITH_SHA256_FROM_KEYSTORE"); once
+          # the keystore is generated and ANDROID_KEYSTORE_B64 / _PASSWORD secrets are
+          # set, drop --skipSigning here (tracked for v2.0.2).
+          if [ -f android.keystore ] && [ -n "$BUBBLEWRAP_KEYSTORE_PASSWORD" ]; then
+            bubblewrap build
+          else
+            bubblewrap build --skipSigning
+          fi
+
+      - name: Stop icon server
+        if: always()
+        run: |
+          if [ -f /tmp/icons-http.pid ]; then
+            kill "$(cat /tmp/icons-http.pid)" || true
+          fi
+
+      - uses: actions/upload-artifact@v4
           bubblewrap init --manifest=./twa-manifest.json --skipPwaValidation || true
           bubblewrap build --skipPwaValidation
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: android-bubblewrap
-          path: dist-apk/*.apk
+          path: |
+            dist-apk/*.apk
+            dist-apk/app/build/outputs/apk/release/*.apk
+            dist-apk/app/build/outputs/bundle/release/*.aab
           if-no-files-found: warn
 
   # ─── 3. Docker multi-arch → GHCR ─────────────────────────────────────
@@ -126,15 +186,15 @@ jobs:
     name: Docker (amd64 + arm64) → GHCR
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+      - uses: actions/checkout@v7
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/metadata-action@v5
+      - uses: docker/metadata-action@v6
         id: meta
         with:
           images: ghcr.io/${{ github.repository_owner }}/kali-webos
@@ -145,7 +205,13 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha,format=short
             type=raw,value=latest,enable={{is_default_branch}}
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
+        env:
+          # Suppress the `<owner>~<repo>~<hash>.dockerbuild` build-record artifact.
+          # It's buildx metadata, not a release deliverable, and its transient blob
+          # storage flakiness sank the v2.0.2 GitHub Release job (run 29749088809).
+          DOCKER_BUILD_RECORD_UPLOAD: false
+          DOCKER_BUILD_SUMMARY: false
         with:
           context: .
           platforms: linux/amd64,linux/arm64
@@ -163,8 +229,8 @@ jobs:
     runs-on: ubuntu-22.04
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
@@ -182,8 +248,8 @@ jobs:
     name: Extension — MV3 zip
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: "${{ env.NODE_VERSION }}", cache: "npm" }
       - run: npm ci
       - run: npm run sdk:build
@@ -191,7 +257,7 @@ jobs:
       - name: Package extension
         run: |
           cd extension/dist && zip -r ../../aetherclaw-extension-${GITHUB_REF_NAME#v}.zip .
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: browser-extension
           path: aetherclaw-extension-*.zip
@@ -201,8 +267,8 @@ jobs:
     name: VS Code — VSIX
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: "${{ env.NODE_VERSION }}", cache: "npm" }
       - run: npm ci
       - run: npm run sdk:build
@@ -210,7 +276,7 @@ jobs:
       - name: Package VSIX
         working-directory: vscode-extension
         run: npx --yes @vscode/vsce package --no-dependencies --out aetherclaw-vscode.vsix
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: vscode-extension
           path: vscode-extension/*.vsix
@@ -220,8 +286,8 @@ jobs:
     name: Obsidian — plugin zip
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: "${{ env.NODE_VERSION }}", cache: "npm" }
       - run: npm ci
       - run: npm run sdk:build
@@ -229,7 +295,7 @@ jobs:
       - name: Package plugin
         run: |
           cd obsidian-plugin/dist && zip -r ../../obsidian-aetherclaw-${GITHUB_REF_NAME#v}.zip .
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: obsidian-plugin
           path: obsidian-aetherclaw-*.zip
@@ -241,9 +307,14 @@ jobs:
     runs-on: ubuntu-22.04
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-      - uses: actions/download-artifact@v4
-        with: { path: artifacts }
-      - uses: softprops/action-gh-release@v2
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+          # Safety net: even with DOCKER_BUILD_RECORD_UPLOAD=false, exclude any
+          # spurious *.dockerbuild build-record blobs that other actions might
+          # produce in future. One flaky ~170 KB blob blocked the v2.0.2 release.
+          pattern: "!(*.dockerbuild)"
+      - uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
           files: artifacts/**/*
