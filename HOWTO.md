@@ -4,6 +4,7 @@ Task-oriented recipes. Each entry is **goal → exact commands → expected outc
 
 For the full architecture and roadmap, see [BUILD_BLUEPRINT.md](BUILD_BLUEPRINT.md).
 For packaging into desktop/mobile/Docker/SDK, see [DISTRIBUTION.md](DISTRIBUTION.md).
+For standalone-install walkthroughs by use case, see [INSTALL.md](INSTALL.md).
 For high-level usage and the app catalog, see [README.md](README.md).
 
 ---
