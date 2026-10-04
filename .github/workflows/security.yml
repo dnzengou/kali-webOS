@@ -24,13 +24,17 @@ jobs:
         with: { category: "/language:javascript-typescript" }
 
   npm-audit:
-    name: npm audit (high+)
+    name: npm audit (high+, prod only)
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with: { node-version: "22", cache: "npm" }
-      - run: npm audit --audit-level=high
+      # --omit=dev scopes the audit to what ships in the production bundle.
+      # Dev-only CVEs with no upstream fix (e.g. braces/chokidar via tailwind 3)
+      # are tracked in overrides but not a blocker; Trivy's ignore-unfixed path
+      # covers the same posture for filesystem + container scans.
+      - run: npm audit --omit=dev --audit-level=high
 
   trivy-fs:
     name: Trivy filesystem scan
