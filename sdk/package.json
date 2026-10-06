@@ -49,9 +49,14 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kali-webos/aetherclaw-sdk.git"
+    "url": "git+https://github.com/dnzengou/kali-webOS.git",
+    "directory": "sdk"
   },
-  "homepage": "https://kali-webos.io/sdk",
+  "homepage": "https://github.com/dnzengou/kali-webOS/tree/main/sdk#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
