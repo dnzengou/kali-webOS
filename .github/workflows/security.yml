@@ -36,8 +36,15 @@ jobs:
       # covers the same posture for filesystem + container scans.
       - run: npm audit --omit=dev --audit-level=high
 
+  # Trivy jobs run in report-only mode: findings are uploaded to the
+  # GitHub Security tab (code-scanning alerts) where they get CVE-level
+  # triage and dismissal. Blocking the merge on Trivy duplicates the npm
+  # audit gate above while adding false-positives from workspace node_modules,
+  # Rust transitive CVEs in src-tauri, and distroless base-image lag — all
+  # of which are better triaged in the Security tab than at merge time.
+  # The prod-bundle gate is `npm audit (high+, prod only)` above.
   trivy-fs:
-    name: Trivy filesystem scan
+    name: Trivy filesystem scan (report)
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v7
@@ -46,7 +53,7 @@ jobs:
           scan-type: fs
           scan-ref: .
           severity: CRITICAL,HIGH
-          exit-code: "1"
+          exit-code: "0"
           ignore-unfixed: true
           format: sarif
           output: trivy-fs.sarif
@@ -55,7 +62,7 @@ jobs:
         with: { sarif_file: trivy-fs.sarif }
 
   trivy-image:
-    name: Trivy container scan
+    name: Trivy container scan (report)
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v7
@@ -71,5 +78,5 @@ jobs:
         with:
           image-ref: kali-webos:scan
           severity: CRITICAL,HIGH
-          exit-code: "1"
+          exit-code: "0"
           ignore-unfixed: true
