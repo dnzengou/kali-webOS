@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { AppRegistryEntry } from "@/apps/registry";
 
 export interface WindowState {
@@ -38,9 +39,17 @@ interface OsState {
   setGuest: (isGuest: boolean) => void;
 }
 
+const MOBILE_BREAKPOINT = 768;
+const TOP_BAR_H = 36;
+
+const isMobile = () =>
+  typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT;
+
 let windowCounter = 0;
 
-export const useOsStore = create<OsState>((set, get) => ({
+export const useOsStore = create<OsState>()(
+  persist(
+    (set, get) => ({
   windows: [],
   activeWindowId: null,
   nextZIndex: 100,
@@ -57,17 +66,24 @@ export const useOsStore = create<OsState>((set, get) => ({
       get().focusWindow(existingWindow.id);
       return;
     }
+    const mobile = isMobile();
+    const vw = typeof window !== "undefined" ? window.innerWidth  : 1200;
+    const vh = typeof window !== "undefined" ? window.innerHeight : 800;
     const newWindow: WindowState = {
       id,
       appId: app.id,
       title: app.name,
-      x: 100 + (state.windows.length * 30) % 200,
-      y: 60 + (state.windows.length * 30) % 150,
-      width: app.defaultWidth,
-      height: app.defaultHeight,
+      x: mobile ? 0 : 100 + (state.windows.length * 30) % 200,
+      y: mobile ? TOP_BAR_H : 60 + (state.windows.length * 30) % 150,
+      width:  mobile ? vw                : app.defaultWidth,
+      height: mobile ? vh - TOP_BAR_H    : app.defaultHeight,
       zIndex: state.nextZIndex,
       isMinimized: false,
-      isMaximized: false,
+      isMaximized: mobile,
+      ...(mobile && {
+        prevX: 100, prevY: 60,
+        prevWidth: app.defaultWidth, prevHeight: app.defaultHeight,
+      }),
     };
     set({
       windows: [...state.windows, newWindow],
@@ -156,4 +172,40 @@ export const useOsStore = create<OsState>((set, get) => ({
   setLocked: (locked) => set({ isLocked: locked }),
   setShowLauncher: (show) => set({ showLauncher: show }),
   setGuest: (isGuest) => set({ isGuest }),
-}));
+    }),
+    {
+      name: "kali-webos:os",
+      version: 1,
+      storage: createJSONStorage(() => localStorage),
+      // Persist window layout + guest flag; isLocked and showLauncher stay
+      // transient so reload always lands on the lock screen with no launcher.
+      partialize: (state) => ({
+        windows: state.windows.map((w) => ({ ...w, isMinimized: false })),
+        activeWindowId: state.activeWindowId,
+        nextZIndex: state.nextZIndex,
+        isGuest: state.isGuest,
+      }),
+      // On rehydrate, if we're on mobile, auto-maximize every restored window
+      // so phone/tablet users don't inherit desktop-sized windows that
+      // overflow the viewport.
+      onRehydrateStorage: () => (state) => {
+        if (!state || typeof window === "undefined") return;
+        if (window.innerWidth >= MOBILE_BREAKPOINT) return;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        state.windows = state.windows.map((w) => ({
+          ...w,
+          prevX: w.prevX ?? w.x,
+          prevY: w.prevY ?? w.y,
+          prevWidth:  w.prevWidth  ?? w.width,
+          prevHeight: w.prevHeight ?? w.height,
+          x: 0,
+          y: TOP_BAR_H,
+          width:  vw,
+          height: vh - TOP_BAR_H,
+          isMaximized: true,
+        }));
+      },
+    },
+  ),
+);
