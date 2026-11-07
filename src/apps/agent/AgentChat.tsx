@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Wrench, Shield, Rocket, Activity, Zap,
-  Send, User, Loader2, Sparkles, BrainCircuit, Trash2,
+  Send, Square, User, Loader2, Sparkles, BrainCircuit, Trash2,
 } from "lucide-react";
 
 const AGENT_TYPES = [
@@ -65,6 +65,7 @@ export default function AgentChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const abortRef  = useRef<AbortController | null>(null);
 
   const createSession = trpc.agent.createSession.useMutation();
   const runAgent = trpc.agent.runAgent.useMutation();
@@ -87,6 +88,9 @@ export default function AgentChat() {
     setIsRunning(true);
     setPrompt("");
 
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
       let sid = sessionId;
       if (!sid) {
@@ -94,11 +98,17 @@ export default function AgentChat() {
           name: `Session ${new Date().toLocaleTimeString()}`,
           agentType: inferredType as any,
         });
+        if (controller.signal.aborted) return;
         sid = s.id;
         setSessionId(sid);
       }
 
-      const result = await runAgent.mutateAsync({ sessionId: sid, prompt: currentPrompt });
+      const result = await runAgent.mutateAsync(
+        { sessionId: sid, prompt: currentPrompt },
+        { signal: controller.signal } as any,
+      );
+
+      if (controller.signal.aborted) return;
 
       setMessages((prev) =>
         prev.map((m) =>
@@ -112,15 +122,28 @@ export default function AgentChat() {
         ),
       );
       utils.agent.listSessions.invalidate();
-    } catch {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === agentMsg.id ? { ...m, content: "Agent execution failed. Check authentication." } : m,
-        ),
-      );
+    } catch (err) {
+      if (controller.signal.aborted) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === agentMsg.id ? { ...m, content: "[canceled by user]" } : m,
+          ),
+        );
+      } else {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === agentMsg.id ? { ...m, content: "Agent execution failed. Check authentication." } : m,
+          ),
+        );
+      }
     } finally {
+      if (abortRef.current === controller) abortRef.current = null;
       setIsRunning(false);
     }
+  }
+
+  function handleCancel() {
+    abortRef.current?.abort();
   }
 
   const agentInfo = AGENT_TYPES.find((a) => a.id === agentType);
@@ -263,15 +286,25 @@ export default function AgentChat() {
             }}
             disabled={isRunning}
           />
-          <Button
-            onClick={handleSend}
-            disabled={!prompt.trim() || isRunning}
-            className="bg-purple-600 hover:bg-purple-500 h-[52px] px-4 shrink-0"
-          >
-            {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-          </Button>
+          {isRunning ? (
+            <Button
+              onClick={handleCancel}
+              className="bg-red-600 hover:bg-red-500 h-[52px] px-4 shrink-0"
+              title="Stop the current run"
+            >
+              <Square className="w-4 h-4" fill="currentColor" />
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSend}
+              disabled={!prompt.trim()}
+              className="bg-purple-600 hover:bg-purple-500 h-[52px] px-4 shrink-0"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          )}
         </div>
-        <p className="text-[10px] text-gray-600 mt-1">Enter to send · Shift+Enter for newline · agent auto-detected from prompt</p>
+        <p className="text-[10px] text-gray-600 mt-1">Enter to send · Shift+Enter for newline · agent auto-detected from prompt · click ■ to stop a run</p>
       </div>
     </div>
   );
