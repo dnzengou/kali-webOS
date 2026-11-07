@@ -16,6 +16,7 @@ import {
   Clock,
   Activity,
 } from "lucide-react";
+import GuestBanner from "@/components/os/GuestBanner";
 
 const STEP_ICONS: Record<string, any> = {
   think: Lightbulb,
@@ -54,6 +55,7 @@ export default function CoTTrace() {
 
   return (
     <div className="flex flex-col h-full bg-[#0a0a1a] text-gray-100">
+      <GuestBanner featureName="Session traces" />
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-purple-900/40">
         <BrainCircuit className="w-5 h-5 text-purple-400" />
