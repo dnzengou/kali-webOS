@@ -15,6 +15,7 @@ import {
   Wrench, Shield, Rocket, Activity, Zap,
   Send, User, Loader2, Sparkles, BrainCircuit, Trash2,
 } from "lucide-react";
+import GuestBanner from "@/components/os/GuestBanner";
 
 const AGENT_TYPES = [
   { id: "builder",   name: "Builder",   icon: Wrench,   color: "text-blue-400",   desc: "Build, compile, bundle" },
@@ -127,6 +128,7 @@ export default function AgentChat() {
 
   return (
     <div className="flex flex-col h-full bg-[#0a0a1a] text-gray-100">
+      <GuestBanner featureName="Agent runs" />
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-purple-900/40 shrink-0">
         <BrainCircuit className="w-5 h-5 text-purple-400" />

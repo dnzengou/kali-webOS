@@ -38,6 +38,7 @@ export default function TopBar() {
 
   const setShowLauncher = useOsStore((s) => s.setShowLauncher);
   const setLocked       = useOsStore((s) => s.setLocked);
+  const isGuest         = useOsStore((s) => s.isGuest);
   const panelRef        = useRef<HTMLDivElement>(null);
 
   // Live clock
@@ -110,6 +111,16 @@ export default function TopBar() {
 
         {/* Right — System tray */}
         <div className="flex items-center gap-2.5">
+          {isGuest && (
+            <button
+              className="text-[10px] text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full hover:border-amber-400/70 hover:text-amber-200 hover:bg-amber-500/10 transition-all flex items-center gap-1"
+              onClick={() => setLocked(true)}
+              title="You're browsing as a guest. Click to sign in."
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              Guest · Sign in
+            </button>
+          )}
           {installPrompt && (
             <button
               className="text-[10px] text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full hover:border-purple-400/60 hover:text-purple-200 transition-all"
