@@ -26,6 +26,14 @@ interface OsState {
   isLocked: boolean;
   showLauncher: boolean;
   isGuest: boolean;
+  /**
+   * Transient: an Agent Chat prompt waiting to be consumed. Set by a
+   * workspace preset or a deep link; read + cleared by AgentChat on open.
+   * Never persisted — the receiver "pops" it so the same prompt never
+   * fires twice.
+   */
+  pendingAgentPrompt: string | null;
+  setPendingAgentPrompt: (prompt: string | null) => void;
   openWindow: (app: AppRegistryEntry) => void;
   closeWindow: (id: string) => void;
   focusWindow: (id: string) => void;
@@ -56,6 +64,9 @@ export const useOsStore = create<OsState>()(
   isLocked: true,
   showLauncher: false,
   isGuest: false,
+  pendingAgentPrompt: null,
+
+  setPendingAgentPrompt: (pendingAgentPrompt) => set({ pendingAgentPrompt }),
 
   openWindow: (app) => {
     const state = get();

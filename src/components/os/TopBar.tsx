@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import {
   Wifi, WifiOff, Volume2, VolumeX, Sun, Power,
-  Lock, RotateCcw, Bolt, ChevronRight,
+  Lock, RotateCcw, Bolt, ChevronRight, Zap,
 } from "lucide-react";
 import { useOsStore } from "@/store/useOsStore";
 import { format } from "date-fns";
+import WorkspacesLauncher from "@/components/os/WorkspacesLauncher";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -35,6 +36,7 @@ export default function TopBar() {
   const [battery, setBattery] = useState<number | null>(null);
   const [charging, setCharging] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showWorkspaces, setShowWorkspaces] = useState(false);
 
   const setShowLauncher = useOsStore((s) => s.setShowLauncher);
   const setLocked       = useOsStore((s) => s.setLocked);
@@ -86,7 +88,7 @@ export default function TopBar() {
           borderBottom: "1px solid rgba(255,255,255,0.07)",
         }}
       >
-        {/* Left — Activities */}
+        {/* Left — Activities + Demos */}
         <div className="flex items-center gap-1">
           <button
             className="flex items-center gap-1.5 text-[12px] font-semibold text-white/80 hover:text-white px-2.5 py-1 rounded-md hover:bg-white/8 transition-all"
@@ -94,6 +96,14 @@ export default function TopBar() {
           >
             <Bolt size={12} className="text-[#9b59b6]" />
             Activities
+          </button>
+          <button
+            className="flex items-center gap-1.5 text-[12px] text-white/55 hover:text-white/90 px-2.5 py-1 rounded-md hover:bg-white/8 transition-all"
+            onClick={() => setShowWorkspaces(true)}
+            title="One-click workspace presets"
+          >
+            <Zap size={12} className="text-purple-300" />
+            Demos
           </button>
         </div>
 
@@ -134,6 +144,9 @@ export default function TopBar() {
           </button>
         </div>
       </div>
+
+      {/* ── Workspaces modal ── */}
+      {showWorkspaces && <WorkspacesLauncher onClose={() => setShowWorkspaces(false)} />}
 
       {/* ── Quick Settings Panel ── */}
       {panel && (

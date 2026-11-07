@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { trpc } from "@/providers/trpc";
+import { useOsStore } from "@/store/useOsStore";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -73,6 +74,14 @@ export default function AgentChat() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Consume a staged prompt from a workspace preset or deep link exactly once.
+  useEffect(() => {
+    const pending = useOsStore.getState().pendingAgentPrompt;
+    if (!pending) return;
+    setPrompt(pending);
+    useOsStore.getState().setPendingAgentPrompt(null);
+  }, []);
 
   async function handleSend() {
     if (!prompt.trim() || isRunning) return;
