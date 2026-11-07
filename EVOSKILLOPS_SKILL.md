@@ -1,5 +1,5 @@
 # EvoSkillOps — AI Development Evolution Skill
-## Version 1.0 · Portable · LLM-Agnostic · Pairs with DEVFLOW_SKILL.md
+## Version 1.1 · Portable · LLM-Agnostic · Pairs with DEVFLOW_SKILL.md
 
 > A command-driven discipline for keeping an evolving repository healthy
 > under continuous AI-assisted work — grounded in patterns surfaced across
@@ -39,9 +39,11 @@ baseline. When the baseline itself has decayed, run EvoSkillOps first.
 | `MC`    | Mutation Candidate    | Propose a new rule for this skill's own evolution |
 | `Es`    | EvoSkill              | Capture a session's surfaced pattern as a repeatable discipline note |
 | `AuA`   | Audit Ambient         | Separate "caused by this PR" red from "ambient on `main`" red |
+| `AbW`   | Audit-before-Write    | Read the actual shipped code before writing docs that describe it |
+| `Vt`    | Visibility            | GTM / SEO / AI-SEO pass — structured data, llms.txt, trust signals (legitimate only) |
 
 **Combination syntax:** `Evo+Un+FxC+Op` runs commands left-to-right.
-**Pipeline alias:** `evo-full` = `Evo+AuA+Un+FxC+Op+Es+MC`
+**Pipeline alias:** `evo-full` = `Evo+AuA+AbW+Un+FxC+Op+Es+MC`
 
 ---
 
@@ -245,6 +247,110 @@ and reviewer explicitly agreeing to pre-fix it in that PR.
 
 ---
 
+### AbW — Audit-before-Write
+**Purpose:** User-facing docs must describe what the code actually does,
+not what the README (or previous AI session) *said* it does. README copy
+drifts; code is the ground truth.
+
+**Trigger.** Any writing task that describes the product's UX, API,
+workflow, or user experience for an external reader.
+
+**Steps:**
+1. List the files that back the behavior you're about to describe
+   (shell, main pages, component modules, store, API routers).
+2. Read them directly — not a snippet, the whole module. Cite file paths
+   in your notes.
+3. Reconcile the code against the current README / changelog / PR body.
+   When they disagree, code wins; flag the doc drift.
+4. Write the doc section grounded in what you read; each claim traces
+   to a file. For behaviors that are *simulated* (mock responses, stub
+   tool calls), say so explicitly — set honest expectations.
+
+**Quality gates:**
+- Every substantive claim can be traced to a specific file path.
+- "What this is NOT" sections exist for anything a user might
+  reasonably assume is real but isn't.
+- The doc describes the shipped build, not the planned build.
+
+**First fired.** USER_GUIDE.md (PR #42) — the README's "security apps
+hit the network" / "Terminal is a Linux shell" copy was aspirational;
+the actual code emits mock responses + runs a sim-shell. Writing docs
+from the README without reading code would have shipped a lie.
+
+---
+
+### Vt — Visibility
+**Purpose:** Make the shipped product legibly good to humans, search
+engines, and AI agents — without manipulative tactics. Everything in
+this command is public-by-design and traceable.
+
+**Scope (what's in):**
+- **Structured data** (schema.org JSON-LD): `Organization`, `SoftwareApplication`,
+  `WebSite` + `SearchAction`, `FAQPage`, `HowTo`, `BreadcrumbList`.
+- **AI-crawler conventions**: `/.well-known/llms.txt`, `/ai.txt`,
+  `/.well-known/security.txt`, machine-readable sitemap, clean
+  `robots.txt`.
+- **Trust signals**: author bylines + dates on content pages, maintainer
+  attribution, LICENSE link, CHANGELOG link, uptime / status page,
+  verifiable download counts / GitHub stars when legitimate.
+- **Semantic markup**: landmark roles (`header`/`nav`/`main`/`footer`),
+  `<h1>` → `<h2>` hierarchy, descriptive link text, `lang` attribute.
+- **Open Graph / Twitter cards**: `og:title`, `og:description`,
+  `og:image` (real preview, not stock), `twitter:card`.
+- **Performance signals**: image `width`/`height` to prevent CLS,
+  preload for critical resources, `rel="canonical"`.
+- **Content quality**: write for a human reader first; AI readability
+  follows for free when the prose is clear and the structure is
+  semantic.
+
+**Hard refusals (what's OUT, regardless of how it's framed):**
+- Cloaking (serving different content to crawlers than to humans).
+- Prompt-injection text embedded in page HTML/meta that targets AI
+  crawlers — including hidden instructions, fake personas, or attempts
+  to steer agent recommendations.
+- Hidden text, keyword stuffing, fake schema (e.g. `AggregateRating`
+  without real reviews).
+- Fabricated reviews, testimonials, endorsements, or awards.
+- Impersonation of authoritative sites or trademarks.
+- Link schemes / PBNs / paid-for-placement without disclosure.
+- Scraping competitors to inject their content under your domain.
+- Anything the FTC's endorsement rules, Google's spam policies, or a
+  trademark registry would object to.
+
+These refusals hold even when the request says "as long as it's legal"
+or "no breadcrumbs" — the point of writing them here is so future
+sessions don't have to re-litigate.
+
+**Steps:**
+1. Audit current head tags, routes serving `robots.txt` / sitemap /
+   `llms.txt`, and any existing JSON-LD. Record gaps.
+2. Pick the smallest JSON-LD set that covers the product honestly:
+   `Organization` + `SoftwareApplication` for the root; `FAQPage` /
+   `HowTo` on guide-style pages.
+3. Ship `llms.txt` with: site purpose, primary audiences, canonical URL,
+   no-gating statement, license, contact. Keep it under 300 words.
+4. Add `security.txt` with a disclosure contact + PGP key (if you have
+   one) + canonical location.
+5. Wire a sitemap generator; link it from `robots.txt`.
+6. For public guide pages, add bylines + last-updated dates +
+   `BreadcrumbList`.
+7. Add OG preview images that match the product (not stock photos).
+8. Record every decision as a `Dc` entry — especially any schema choice
+   that could look overclaiming (e.g. ratings, counts).
+
+**Quality gates:**
+- Every structured-data claim is verifiable by a human reader of the
+  same page — no hidden claims.
+- `llms.txt` is accurate and doesn't try to manipulate the crawler.
+- No text visible to crawlers that isn't visible to users.
+- A security researcher can report a bug via `security.txt` in under
+  60 seconds.
+
+**First fired.** TBD — this command is reserved for a Visibility PR
+once the project's SEO posture is explicitly scoped by the owner.
+
+---
+
 ## DISCIPLINES
 
 Rules that have graduated out of Mutation Candidates. Each has: **name ·
@@ -293,24 +399,42 @@ threshold>` as the single blocking gate. Everything else reports (`Dc-01`
 pattern).
 **Exit.** One blocking gate; others upload findings to the Security tab.
 
+### D-06 · UNIFY-OVER-REBASE  *(promoted from MC-01 in v1.1)*
+**Trigger.** N > 2 open PRs are blocked on the **same** ambient CI red,
+OR on a common merge conflict with `main`.
+**Action.** Open ONE unified branch off latest `main`, cherry-pick each
+PR's non-merge commits (preserving authors), inline the shared fix,
+open a single PR, then close the originals via the `D-03 SUPERSEDE-PATTERN`
+flow.
+**Exit.** The N PRs are closed; the unified PR is open and green; next
+release ships one review rather than N.
+**First fired.** PR #30 (fold of #10, #29, 7 Dependabot). Re-fired
+across the UX branch cluster in this session (PRs #46, #47, #48,
+#49) — the pattern holds whether the cost is a shared security fix or
+a shared base-branch move.
+
+### D-07 · HARNESS-AWARE-LONG-RUNS
+**Trigger.** A command the agent needs to complete exceeds the background
+task timeout (30 min in this harness). `npm install` with aggressive
+overrides is the canonical case.
+**Action.** Prefer the lightest form of the operation that still
+achieves the goal. For npm: `--package-lock-only --legacy-peer-deps`
+regenerates the lockfile in seconds without touching `node_modules`,
+and the lockfile is what CI validates. Full install is rarely required
+in-session.
+**Exit.** The job completes within the harness budget. If it genuinely
+cannot, split the work across branches with explicit CI validation
+instead of racing the clock locally.
+**First fired.** PR #30 — `npm install` hit the 30-min background
+limit; `npm install --package-lock-only` finished in 3 seconds and
+produced a lockfile npm audit could grade.
+
 ---
 
 ## MUTATION CANDIDATES
 
 Rules under observation. Promote to a Discipline (via `Es`) after ≥ 2
 confirmed firings.
-
-### MC-01 · UNIFY-OVER-REBASE
-**Observed in.** PR #30 (fold of #10, #29) — unifying was lower-cost than
-rebasing each PR individually onto a security-fix PR, because each would
-have needed its own security-fix merge.
-**Pattern.** When N PRs are blocked on the same ambient red, the cost to
-unblock each individually is N × (merge + CI + re-review); the cost to
-unify them is 1 × that.
-**Proposed rule.** When N > 2 PRs are blocked on the same ambient CI red,
-prefer `Un` + inline the fix, over per-PR rebases.
-**Promote to Discipline?** Wait for one more firing in a different repo
-shape (e.g. a monorepo with workspace PRs) before promoting.
 
 ### MC-02 · LOCKFILE-ONLY-REGENERATES-WORKSPACES
 **Observed in.** PR #30 — `npm install --package-lock-only` left workspace
@@ -326,11 +450,42 @@ return a single hoisted entry.
 **Promote to Discipline?** Not yet — this may be a transient npm bug
 (seen on npm 10.x). Re-test on npm 11.
 
+### MC-03 · BRANCH-DRIFT-UNDER-PARALLEL-MERGE
+**Observed in.** This session's UX cluster — Branch A's PR failed to
+create with "PullRequest.head (invalid)" because the user had already
+merged PR #46 (the same diff, under a different PR number) via the web
+UI while I was mid-edit on Branches B + C. The agent raced the human.
+**Pattern.** When a human reviewer can merge PRs out-of-band mid-session,
+an agent's locally-known branch state goes stale between commits. Open
+PRs show closed, branches show deleted, and PR-create calls fail.
+**Proposed rule.** Before opening a PR, re-fetch `main` AND query the
+GitHub API for closed PRs whose head matches the branch name. If a
+closed-merged PR exists with the same diff, don't open a duplicate —
+sync main locally and move on.
+**Promote to Discipline?** Need one more firing to confirm it isn't an
+MCP-tool quirk. For now, run `gh api "repos/<o>/<r>/pulls?head=<o>:<branch>&state=all"`
+before every `create_pull_request` call.
+
+### MC-04 · DEMO-SURFACE-PRESETS
+**Observed in.** USER_GUIDE.md audit (PR #42) — new visitors discovered
+the 59-app catalog but had no framing for "what do I do with it?".
+PR #49 added five one-click workspace presets (`?demo=<id>`) that
+stage a scenario in one click.
+**Pattern.** For OS-like / tool-collection products, the single highest-
+leverage UX addition after the catalog is a curated "do this first"
+surface — presets with deep links. Converts a cold-start blank slate
+into a guided tour without a tutorial overlay.
+**Proposed rule.** When a product exposes > 20 sibling capabilities,
+ship a presets surface (plus deep links for sharing) before adding a
+60-second tour or an onboarding checklist.
+**Promote to Discipline?** Need a second firing on a different product
+shape before promoting.
+
 ---
 
 ## PIPELINE ALIASES
 
-### `evo-full` = `Evo+AuA+Un+FxC+Op+Es+MC`
+### `evo-full` = `Evo+AuA+AbW+Un+FxC+Op+Es+MC`
 
 Full between-feature maintenance sweep. Order matters:
 
@@ -374,6 +529,20 @@ Expected cadence: once per release, or when any `Evo` trigger fires (see
 ---
 
 ## VERSION HISTORY
+
+- **1.1 — 2026-11-07** · Minor. New commands: `AbW`
+  (Audit-before-Write, fired for USER_GUIDE.md), `Vt` (Visibility —
+  reserved for a scoped GTM/AI-SEO PR, with hard refusals for
+  manipulative tactics documented inline). MC-01 UNIFY-OVER-REBASE
+  promoted to **D-06** after re-firing on the UX branch cluster (PRs
+  #46/#47/#48/#49). New Disciplines: **D-07 HARNESS-AWARE-LONG-RUNS**.
+  New Mutation Candidates: **MC-03 BRANCH-DRIFT-UNDER-PARALLEL-MERGE**
+  (human merges out-of-band mid-session → agent's locally-known branch
+  state goes stale; pre-check `head=<branch>&state=all` before every
+  `create_pull_request`); **MC-04 DEMO-SURFACE-PRESETS** (products
+  exposing > 20 sibling capabilities benefit from a curated
+  preset+deep-link surface before adding tutorial overlays). `evo-full`
+  pipeline updated to include `AbW`.
 
 - **1.0 — 2026-10-23** · Initial release. Commands: Evo, Un, FxC, Op, Dc,
   MC, Es, AuA. Disciplines: D-01…D-05. Mutation Candidates: MC-01, MC-02.
