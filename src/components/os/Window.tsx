@@ -48,14 +48,14 @@ export default function Window({ windowId, app, children }: WindowProps) {
   const resStart   = useRef({ mx: 0, my: 0, x: 0, y: 0, w: 0, h: 0 });
 
   useEffect(() => {
-    const onMove = (e: MouseEvent) => {
+    const processMove = (clientX: number, clientY: number) => {
       if (dragging.current) {
         const vw = window.innerWidth;
         const vh = window.innerHeight;
         const w  = win?.width  ?? 600;
         const h  = win?.height ?? 400;
-        let nx = e.clientX - dragOff.current.x;
-        let ny = e.clientY - dragOff.current.y;
+        let nx = clientX - dragOff.current.x;
+        let ny = clientY - dragOff.current.y;
         if (nx < SNAP)            nx = 0;
         if (ny < TOP_BAR_H + SNAP) ny = TOP_BAR_H;
         if (nx + w > vw - SNAP)   nx = vw - w;
@@ -64,8 +64,8 @@ export default function Window({ windowId, app, children }: WindowProps) {
       }
       if (resizing.current) {
         const { mx, my, x: ox, y: oy, w: ow, h: oh } = resStart.current;
-        const dx = e.clientX - mx;
-        const dy = e.clientY - my;
+        const dx = clientX - mx;
+        const dy = clientY - my;
         const dir = resDir.current;
         let nx = ox, ny = oy, nw = ow, nh = oh;
         if (dir.includes("e"))  nw = Math.max(MIN_W, ow + dx);
@@ -77,43 +77,79 @@ export default function Window({ windowId, app, children }: WindowProps) {
         resizeFn(windowId, nw, nh);
       }
     };
+    const onMouseMove = (e: MouseEvent) => processMove(e.clientX, e.clientY);
+    const onTouchMove = (e: TouchEvent) => {
+      // While dragging/resizing a window, suppress the page's touch-scroll;
+      // otherwise the whole viewport scrolls under the finger.
+      if (dragging.current || resizing.current) {
+        const t = e.touches[0];
+        if (t) { e.preventDefault(); processMove(t.clientX, t.clientY); }
+      }
+    };
     const onUp = () => {
       dragging.current = false;
       resizing.current = false;
       document.body.style.cursor     = "";
       document.body.style.userSelect = "";
     };
-    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup",   onUp);
+    document.addEventListener("touchmove", onTouchMove, { passive: false });
+    document.addEventListener("touchend",  onUp);
+    document.addEventListener("touchcancel", onUp);
     return () => {
-      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup",   onUp);
+      document.removeEventListener("touchmove", onTouchMove);
+      document.removeEventListener("touchend",  onUp);
+      document.removeEventListener("touchcancel", onUp);
     };
   }, [windowId, win?.width, win?.height, move, resizeFn]);
 
-  const startDrag = useCallback((e: React.MouseEvent) => {
-    if (e.button !== 0) return;
+  const beginDrag = useCallback((clientX: number, clientY: number) => {
     focus(windowId);
     if (win?.isMaximized) return;
     dragging.current = true;
-    dragOff.current  = { x: e.clientX - (win?.x ?? 0), y: e.clientY - (win?.y ?? 0) };
+    dragOff.current  = { x: clientX - (win?.x ?? 0), y: clientY - (win?.y ?? 0) };
     document.body.style.userSelect = "none";
   }, [windowId, win?.x, win?.y, win?.isMaximized, focus]);
 
-  const startResize = useCallback((e: React.MouseEvent, dir: Dir) => {
+  const startDrag = useCallback((e: React.MouseEvent) => {
     if (e.button !== 0) return;
-    e.stopPropagation();
+    beginDrag(e.clientX, e.clientY);
+  }, [beginDrag]);
+
+  const startDragTouch = useCallback((e: React.TouchEvent) => {
+    const t = e.touches[0];
+    if (!t) return;
+    beginDrag(t.clientX, t.clientY);
+  }, [beginDrag]);
+
+  const beginResize = useCallback((clientX: number, clientY: number, dir: Dir) => {
     if (win?.isMaximized) return;
     resizing.current = true;
     resDir.current   = dir;
     resStart.current = {
-      mx: e.clientX, my: e.clientY,
+      mx: clientX, my: clientY,
       x: win?.x ?? 0, y: win?.y ?? 0,
       w: win?.width ?? 600, h: win?.height ?? 400,
     };
     document.body.style.cursor     = CURSORS[dir];
     document.body.style.userSelect = "none";
   }, [win?.isMaximized, win?.x, win?.y, win?.width, win?.height]);
+
+  const startResize = useCallback((e: React.MouseEvent, dir: Dir) => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    beginResize(e.clientX, e.clientY, dir);
+  }, [beginResize]);
+
+  const startResizeTouch = useCallback((e: React.TouchEvent, dir: Dir) => {
+    e.stopPropagation();
+    const t = e.touches[0];
+    if (!t) return;
+    beginResize(t.clientX, t.clientY, dir);
+  }, [beginResize]);
 
   const handleClose = useCallback(() => {
     setClosing(true);
@@ -148,6 +184,7 @@ export default function Window({ windowId, app, children }: WindowProps) {
           border-b border-white/[0.07] transition-colors duration-150
           ${active ? "bg-[#272727]" : "bg-[#1c1c1c]"}`}
         onMouseDown={startDrag}
+        onTouchStart={startDragTouch}
         onDoubleClick={() => win.isMaximized ? restore(windowId) : maximize(windowId)}
       >
         {/* Traffic lights */}
@@ -193,15 +230,17 @@ export default function Window({ windowId, app, children }: WindowProps) {
       </div>
 
       {/* ── 8-directional resize handles ── */}
+      {/* Edge grab regions are 4px for mouse; corner regions are 16px to give */}
+      {/* fingers enough target area without stealing clicks from window content. */}
       {!win.isMaximized && (<>
-        <div className="absolute top-0 left-3 right-3 h-[4px] cursor-n-resize" onMouseDown={(e) => startResize(e, "n")} />
-        <div className="absolute bottom-0 left-3 right-3 h-[4px] cursor-s-resize" onMouseDown={(e) => startResize(e, "s")} />
-        <div className="absolute top-3 bottom-3 left-0 w-[4px] cursor-w-resize" onMouseDown={(e) => startResize(e, "w")} />
-        <div className="absolute top-3 bottom-3 right-0 w-[4px] cursor-e-resize" onMouseDown={(e) => startResize(e, "e")} />
-        <div className="absolute top-0 left-0 w-[8px] h-[8px] cursor-nw-resize" onMouseDown={(e) => startResize(e, "nw")} />
-        <div className="absolute top-0 right-0 w-[8px] h-[8px] cursor-ne-resize" onMouseDown={(e) => startResize(e, "ne")} />
-        <div className="absolute bottom-0 left-0 w-[8px] h-[8px] cursor-sw-resize" onMouseDown={(e) => startResize(e, "sw")} />
-        <div className="absolute bottom-0 right-0 w-[8px] h-[8px] cursor-se-resize" onMouseDown={(e) => startResize(e, "se")} />
+        <div className="absolute top-0 left-3 right-3 h-[4px] cursor-n-resize touch-none" onMouseDown={(e) => startResize(e, "n")} onTouchStart={(e) => startResizeTouch(e, "n")} />
+        <div className="absolute bottom-0 left-3 right-3 h-[4px] cursor-s-resize touch-none" onMouseDown={(e) => startResize(e, "s")} onTouchStart={(e) => startResizeTouch(e, "s")} />
+        <div className="absolute top-3 bottom-3 left-0 w-[4px] cursor-w-resize touch-none" onMouseDown={(e) => startResize(e, "w")} onTouchStart={(e) => startResizeTouch(e, "w")} />
+        <div className="absolute top-3 bottom-3 right-0 w-[4px] cursor-e-resize touch-none" onMouseDown={(e) => startResize(e, "e")} onTouchStart={(e) => startResizeTouch(e, "e")} />
+        <div className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize touch-none" onMouseDown={(e) => startResize(e, "nw")} onTouchStart={(e) => startResizeTouch(e, "nw")} />
+        <div className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize touch-none" onMouseDown={(e) => startResize(e, "ne")} onTouchStart={(e) => startResizeTouch(e, "ne")} />
+        <div className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize touch-none" onMouseDown={(e) => startResize(e, "sw")} onTouchStart={(e) => startResizeTouch(e, "sw")} />
+        <div className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize touch-none" onMouseDown={(e) => startResize(e, "se")} onTouchStart={(e) => startResizeTouch(e, "se")} />
       </>)}
     </div>
   );
