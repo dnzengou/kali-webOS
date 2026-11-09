@@ -1,0 +1,26 @@
+# Kali WebOS — AetherClaw Edition
+
+## The humans behind this
+
+- **Eugene Desire Nzengou** — maintainer
+  Issues: https://github.com/dnzengou/kali-webOS/issues
+
+## Contributors
+
+See the full list at https://github.com/dnzengou/kali-webOS/graphs/contributors
+
+## Thanks
+
+- The Kali Linux team — for the inspiration the theme borrows from.
+- The React, Tauri, Vite, Hono, Drizzle, and shadcn/ui communities.
+- Everyone who reported a bug or sent a PR.
+
+## Site
+
+- License: MIT
+- Source: https://github.com/dnzengou/kali-webOS
+- Standards: HTML5, TypeScript, React 19, Tailwind CSS 3
+- Components: lucide-react (icons), Radix UI (primitives), Zustand (state)
+- Built with: Vite 7
+
+Last updated: 2026-11-09

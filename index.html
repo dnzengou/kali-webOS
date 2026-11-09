@@ -13,13 +13,88 @@
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
 
-    <!-- SEO / Social -->
-    <meta name="description" content="Kali WebOS — browser-based Linux desktop with AetherClaw CoT multi-agent AI, 59 apps, installable PWA." />
-    <meta property="og:title" content="Kali WebOS - AetherClaw Edition" />
-    <meta property="og:description" content="Browser-based Linux desktop with AI agents, terminal, security tools, games, and more." />
-    <meta property="og:type" content="website" />
+    <!-- SEO / Discovery / Social -->
+    <title>Kali WebOS — AetherClaw Edition · AI-agent desktop in your browser</title>
+    <meta name="description" content="Kali WebOS is a browser-based Linux-themed desktop with 59 apps and an AetherClaw chain-of-thought multi-agent system — try it live, install as a PWA, or self-host via Docker/SDK." />
+    <link rel="canonical" href="https://cccytvbv5uiq6.kimi.page/" />
+    <meta name="author" content="Eugene Desire Nzengou" />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
 
-    <title>Kali WebOS - AetherClaw Edition</title>
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Kali WebOS" />
+    <meta property="og:title" content="Kali WebOS — AetherClaw Edition" />
+    <meta property="og:description" content="Browser-based Linux desktop with 59 apps, a Chain-of-Thought multi-agent AI, and an installable PWA. Guest-friendly demo workspaces one click away." />
+    <meta property="og:url" content="https://cccytvbv5uiq6.kimi.page/" />
+    <meta property="og:image" content="https://cccytvbv5uiq6.kimi.page/icon-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="Kali WebOS logo — a purple hexagon mark" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Kali WebOS — AetherClaw Edition" />
+    <meta name="twitter:description" content="Browser-based Linux desktop with AI agents, 59 apps, installable PWA. Try ?demo=showcase — no login needed." />
+    <meta name="twitter:image" content="https://cccytvbv5uiq6.kimi.page/icon-512.png" />
+
+    <!-- Structured data (schema.org JSON-LD) — Organization + SoftwareApplication -->
+    <!-- Keep claims verifiable on the page. No fake AggregateRating or install counts. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://cccytvbv5uiq6.kimi.page/#org",
+          "name": "Kali WebOS",
+          "url": "https://cccytvbv5uiq6.kimi.page/",
+          "logo": "https://cccytvbv5uiq6.kimi.page/icon-512.png",
+          "sameAs": [
+            "https://github.com/dnzengou/kali-webOS"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://cccytvbv5uiq6.kimi.page/#website",
+          "url": "https://cccytvbv5uiq6.kimi.page/",
+          "name": "Kali WebOS",
+          "description": "Browser-based Linux desktop with AetherClaw CoT multi-agent AI.",
+          "publisher": { "@id": "https://cccytvbv5uiq6.kimi.page/#org" },
+          "inLanguage": "en"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://cccytvbv5uiq6.kimi.page/#app",
+          "name": "Kali WebOS — AetherClaw Edition",
+          "applicationCategory": "DeveloperApplication",
+          "applicationSubCategory": "Desktop Environment",
+          "operatingSystem": "Web, iOS, Android, Windows, macOS, Linux",
+          "description": "Browser-based Linux-themed desktop with 59 apps and a Chain-of-Thought multi-agent AI (AetherClaw). Installs as a PWA, ships as a Tauri desktop app, Bubblewrap Android APK, Docker image, and an npm SDK.",
+          "url": "https://cccytvbv5uiq6.kimi.page/",
+          "image": "https://cccytvbv5uiq6.kimi.page/icon-512.png",
+          "softwareVersion": "2.0.2",
+          "license": "https://github.com/dnzengou/kali-webOS/blob/main/LICENSE",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock"
+          },
+          "author": { "@id": "https://cccytvbv5uiq6.kimi.page/#org" },
+          "publisher": { "@id": "https://cccytvbv5uiq6.kimi.page/#org" },
+          "featureList": [
+            "59 integrated applications across System, Security, Internet, Productivity, Media, DevTools, Games, and AI Agent categories",
+            "AetherClaw Chain-of-Thought multi-agent system with five specialist personalities (Builder, Security, Deployer, Monitor, Optimizer)",
+            "Draggable, resizable, touch-enabled window manager with 8-direction resize and snap-to-edge",
+            "PWA installable on desktop and mobile; works offline after first load",
+            "One-click demo workspaces: ?demo=showcase (guest-friendly), ?demo=pentest, ?demo=dev, ?demo=soc, ?demo=studio",
+            "Alt+Tab window switcher, App Launcher with keyboard navigation (Cmd/Ctrl+K)"
+          ]
+        }
+      ]
+    }
+    </script>
 
     <!-- SW registration — before module script so it's ready ASAP -->
     <script>

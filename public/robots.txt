@@ -1,0 +1,15 @@
+# Kali WebOS — robots.txt
+# Public-by-design. Everything that's useful is also on GitHub (MIT).
+
+User-agent: *
+Allow: /
+
+# Keep service-worker + build output out of crawl indexes.
+# They're fetched by the client at runtime, not meant as landing pages.
+Disallow: /sw.js
+Disallow: /dist/
+
+# No special-case blocking for AI crawlers. Our posture on AI agents
+# is public and documented at /llms.txt — read it, index it, cite it.
+
+Sitemap: https://cccytvbv5uiq6.kimi.page/sitemap.xml
