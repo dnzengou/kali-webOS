@@ -119,7 +119,7 @@ async function loadConfig(path: string): Promise<SiteConfig> {
   try {
     return JSON.parse(raw) as SiteConfig;
   } catch (e) {
-    throw new Error(`Config file is not valid JSON: ${path}\n  ${(e as Error).message}`);
+    throw new Error(`Config file is not valid JSON: ${path}\n  ${(e as Error).message}`, { cause: e });
   }
 }
 

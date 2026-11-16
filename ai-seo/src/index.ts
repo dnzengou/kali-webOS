@@ -1,5 +1,5 @@
 import type { GenerateResult, SiteConfig } from "./types";
-import { validate, validateRobotsRules, SeoManipulationError } from "./validate";
+import { validate, validateRobotsRules } from "./validate";
 import {
   generateLlmsTxt,
   generateRobotsTxt,
