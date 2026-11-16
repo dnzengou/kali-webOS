@@ -8,6 +8,7 @@ A production-ready web-based Linux desktop environment running entirely in your 
 
 > **New here?** Four docs to know:
 > - **README.md** (this file) — what it is, how to use it, how to develop it
+> - **[USER_GUIDE.md](USER_GUIDE.md)** — end-user guide: desktop tour, apps, agents, keyboard, mobile, offline, troubleshooting
 > - **[INSTALL.md](INSTALL.md)** — pick a standalone install path by use case
 > - **[HOWTO.md](HOWTO.md)** — task-oriented developer recipes ("how do I …?")
 > - **[DISTRIBUTION.md](DISTRIBUTION.md)** — packaging matrix for all eight release channels

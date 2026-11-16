@@ -23,6 +23,7 @@ import {
   Loader2,
   GitBranch,
 } from "lucide-react";
+import GuestBanner from "@/components/os/GuestBanner";
 
 const STAGE_DEFS = [
   { name: "Build", icon: Wrench, color: "text-blue-400", bg: "bg-blue-400" },
@@ -58,6 +59,7 @@ export default function Pipeline() {
 
   return (
     <div className="flex flex-col h-full bg-[#0a0a1a] text-gray-100">
+      <GuestBanner featureName="Pipeline creation and runs" />
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-purple-900/40">
         <Workflow className="w-5 h-5 text-purple-400" />

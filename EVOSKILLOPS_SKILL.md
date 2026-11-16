@@ -1,5 +1,6 @@
 # EvoSkillOps — AI Development Evolution Skill
 ## Version 1.1 · Portable · LLM-Agnostic · Pairs with DEVFLOW_SKILL.md
+## Version 1.2 · Portable · LLM-Agnostic · Pairs with DEVFLOW_SKILL.md
 
 > A command-driven discipline for keeping an evolving repository healthy
 > under continuous AI-assisted work — grounded in patterns surfaced across
@@ -41,6 +42,8 @@ baseline. When the baseline itself has decayed, run EvoSkillOps first.
 | `AuA`   | Audit Ambient         | Separate "caused by this PR" red from "ambient on `main`" red |
 | `AbW`   | Audit-before-Write    | Read the actual shipped code before writing docs that describe it |
 | `Vt`    | Visibility            | GTM / SEO / AI-SEO pass — structured data, llms.txt, trust signals (legitimate only) |
+| `Pz`    | Productize            | Turn a repeated recipe into a standalone package with a validator + CLI + tests |
+| `Tr`    | Trim                  | Remove lines, deps, and branches that don't earn their keep |
 
 **Combination syntax:** `Evo+Un+FxC+Op` runs commands left-to-right.
 **Pipeline alias:** `evo-full` = `Evo+AuA+AbW+Un+FxC+Op+Es+MC`
@@ -348,6 +351,82 @@ sessions don't have to re-litigate.
 
 **First fired.** TBD — this command is reserved for a Visibility PR
 once the project's SEO posture is explicitly scoped by the owner.
+**First fired.** PR #51 shipped the inline implementation on kali-webOS.
+PR #52 then productized the recipe into `@aetherclaw/ai-seo` (see `Pz`
+below) — any project can now consume the same posture by `npm i` + one
+config file.
+
+---
+
+### Pz — Productize
+**Purpose:** Take a recipe that has fired twice (or that you expect
+to fire often across projects), and turn it into a standalone package
+with its own validator, CLI, and tests. Stops repeated inline work
+from drifting into inconsistency or re-litigating policy.
+
+**Trigger.** A discipline/command has been applied two or more times
+across projects, AND its implementation is mostly string/file
+generation (no privileged runtime access needed), AND the "what's
+right" is a policy you want to enforce in CI.
+
+**Steps:**
+1. Extract the config shape into a typed `*.config.*` surface — one
+   object, literal fields, no computed values.
+2. Write the **validator first**. The validator encodes the "what's
+   right" policy; everything else is paint. Errors must cite the policy
+   section they enforce.
+3. Generators are **strings only, no I/O**. Keep them pure so tests
+   are a single call + assertion.
+4. CLI does the I/O: `init` (scaffold a config), `generate` (write
+   files), `validate` (CI gate, non-zero exit on refusal).
+5. Zero runtime deps. If you need a library, think twice — this is a
+   small package.
+6. Tests: happy path + every refusal + every optional feature's happy
+   integration.
+7. README: install, use, config reference, **refusal table with policy
+   citations**, CI gating example, philosophy paragraph.
+
+**Quality gates:**
+- Config → package call → files, with zero network calls.
+- Exit codes: 0 pass, 1 usage, 2 refusal, 3 I/O.
+- Refusal messages name the policy they enforce (not "invalid").
+- README has a refusal table that matches the test suite 1:1.
+- Package publishable to npm without secrets in the package.
+
+**First fired.** PR #52 productized the `Vt` recipe as
+`@aetherclaw/ai-seo` after `Vt` fired inline in PR #51. One recipe,
+one validator, every future project.
+
+---
+
+### Tr — Trim
+**Purpose:** Remove code, docs, deps, and branches that don't earn
+their keep. The opposite of `B`. Executed as a dedicated pass so the
+removals aren't rolled up into a feature PR.
+
+**Trigger.** Any of:
+- Bundle size has grown without a feature landing.
+- A dependency hasn't been touched in 90 days AND has one caller.
+- A PR has been open > 30 days with no progress.
+- A dead code-path is surfaced by coverage reports or linter.
+
+**Steps:**
+1. Catalog candidates. Group into: deps, code, docs, PRs, branches,
+   CI jobs.
+2. For each: establish what breaks if it's removed. Where there's doubt,
+   leave it. Where there isn't, remove it in a single commit per
+   category.
+3. Ship each removal as its own PR title prefix `chore(trim):` so git
+   log stays legible.
+4. On merge, record a Dc entry when a removal represents a reversal of
+   a prior architectural choice.
+
+**Quality gates:**
+- Each `Tr` PR has a measurable delta: bundle bytes saved, lines
+  removed, dependencies dropped, PR count reduced.
+- Nothing silently added back in the same PR.
+- A reader who doesn't know the codebase can tell from the PR body
+  *why* each line was removed.
 
 ---
 
@@ -429,6 +508,20 @@ instead of racing the clock locally.
 limit; `npm install --package-lock-only` finished in 3 seconds and
 produced a lockfile npm audit could grade.
 
+### D-08 · POLICY-IN-CODE  *(from MC after PR #52)*
+**Trigger.** You've documented a refusal policy (in SEO.md, a Decision
+log, a review checklist) and a future session or teammate might apply
+the covered recipe without reading the policy doc.
+**Action.** Move the policy into executable form: a validator function
+in the package that applies the recipe. Fail builds when the policy is
+violated. The policy doc still exists as the spec, but it's the test
+suite, not the doc, that enforces compliance.
+**Exit.** The policy doc and the validator are kept in sync (see
+`Pz` quality gate: refusal table matches test suite 1:1).
+**First fired.** PR #52 `@aetherclaw/ai-seo` — SEO.md's hard-refusals
+list became a `SeoManipulationError`-throwing validator; the test
+suite has one assertion per refusal.
+
 ---
 
 ## MUTATION CANDIDATES
@@ -481,11 +574,40 @@ ship a presets surface (plus deep links for sharing) before adding a
 **Promote to Discipline?** Need a second firing on a different product
 shape before promoting.
 
+### MC-05 · ONE-CONFIG-ONE-POLICY
+**Observed in.** PR #52 (`@aetherclaw/ai-seo`). The package exposes one
+typed config and refuses all manipulative inputs via a validator —
+instead of taking many flags that each toggle manipulation on and off.
+**Pattern.** When a tool automates a recipe that has non-negotiable
+quality constraints, keeping the policy in ONE validator (not scattered
+across flags/options) prevents partial compliance. Callers can't say
+"I'll just disable the one check that doesn't fit" — the policy is
+atomic.
+**Proposed rule.** When productizing a recipe with policy guardrails,
+expose ONE validator function users can run (not a `--strict` /
+`--lax` flag pair). The validator enforces everything or it fails.
+Opt-outs force a fork of the package, which is public and reviewable.
+**Promote to Discipline?** Wait for a second productization to confirm
+the pattern holds outside SEO.
+
 ---
 
 ## PIPELINE ALIASES
 
 ### `evo-full` = `Evo+AuA+AbW+Un+FxC+Op+Es+MC`
+### `evo-launch` = `Evo+AbW+Vt+Pz+Op` *(new in v1.2)*
+
+The **launch** pipeline is `evo-full` reshaped for getting a product
+from "works" to "worth sharing." Runs once per external surface:
+
+1. **Evo** — survey live state; what's cold-start-visible?
+2. **AbW** — audit the actual code before writing user-facing docs.
+3. **Vt** — AI-SEO + trust signals.
+4. **Pz** — if the recipe applies elsewhere, package it (optional).
+5. **Op** — tune Dependabot, dead-branch cleanup, close superseded PRs.
+
+Skip Un/FxC/Es/MC on this pass — those are between-feature; `evo-launch`
+is before-first-share. Fire `evo-full` at the next release boundary.
 
 Full between-feature maintenance sweep. Order matters:
 
@@ -529,6 +651,19 @@ Expected cadence: once per release, or when any `Evo` trigger fires (see
 ---
 
 ## VERSION HISTORY
+
+- **1.2 — 2026-11-14** · Minor. New commands: **`Pz`** (Productize — turn
+  a repeated recipe into a standalone package with validator + CLI + tests,
+  first fired on PR #52 `@aetherclaw/ai-seo`); **`Tr`** (Trim — dedicated
+  removal pass for deps/code/docs/PRs/branches, so cleanups don't ride
+  inside feature PRs). `Vt` section updated to point at the productized
+  package. New Discipline **D-08 POLICY-IN-CODE** — when a refusal policy
+  exists in docs, move it into executable form (validator + tests) so it
+  can't be silently violated by future sessions. New Mutation Candidate
+  **MC-05 ONE-CONFIG-ONE-POLICY** — productized recipes expose one
+  validator, not a strict/lax flag pair; opt-outs require a package
+  fork. New pipeline alias **`evo-launch`** = `Evo+AbW+Vt+Pz+Op`, fired
+  once per external surface before first share.
 
 - **1.1 — 2026-11-07** · Minor. New commands: `AbW`
   (Audit-before-Write, fired for USER_GUIDE.md), `Vt` (Visibility —

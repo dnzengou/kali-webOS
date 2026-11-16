@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { trpc } from "@/providers/trpc";
+import { useOsStore } from "@/store/useOsStore";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -13,8 +14,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Wrench, Shield, Rocket, Activity, Zap,
-  Send, User, Loader2, Sparkles, BrainCircuit, Trash2,
+  Send, Square, User, Loader2, Sparkles, BrainCircuit, Trash2,
 } from "lucide-react";
+import GuestBanner from "@/components/os/GuestBanner";
 
 const AGENT_TYPES = [
   { id: "builder",   name: "Builder",   icon: Wrench,   color: "text-blue-400",   desc: "Build, compile, bundle" },
@@ -65,6 +67,7 @@ export default function AgentChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const abortRef  = useRef<AbortController | null>(null);
 
   const createSession = trpc.agent.createSession.useMutation();
   const runAgent = trpc.agent.runAgent.useMutation();
@@ -73,6 +76,14 @@ export default function AgentChat() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Consume a staged prompt from a workspace preset or deep link exactly once.
+  useEffect(() => {
+    const pending = useOsStore.getState().pendingAgentPrompt;
+    if (!pending) return;
+    setPrompt(pending);
+    useOsStore.getState().setPendingAgentPrompt(null);
+  }, []);
 
   async function handleSend() {
     if (!prompt.trim() || isRunning) return;
@@ -87,6 +98,9 @@ export default function AgentChat() {
     setIsRunning(true);
     setPrompt("");
 
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
       let sid = sessionId;
       if (!sid) {
@@ -94,11 +108,17 @@ export default function AgentChat() {
           name: `Session ${new Date().toLocaleTimeString()}`,
           agentType: inferredType as any,
         });
+        if (controller.signal.aborted) return;
         sid = s.id;
         setSessionId(sid);
       }
 
-      const result = await runAgent.mutateAsync({ sessionId: sid, prompt: currentPrompt });
+      const result = await runAgent.mutateAsync(
+        { sessionId: sid, prompt: currentPrompt },
+        { signal: controller.signal } as any,
+      );
+
+      if (controller.signal.aborted) return;
 
       setMessages((prev) =>
         prev.map((m) =>
@@ -112,21 +132,35 @@ export default function AgentChat() {
         ),
       );
       utils.agent.listSessions.invalidate();
-    } catch {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === agentMsg.id ? { ...m, content: "Agent execution failed. Check authentication." } : m,
-        ),
-      );
+    } catch (err) {
+      if (controller.signal.aborted) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === agentMsg.id ? { ...m, content: "[canceled by user]" } : m,
+          ),
+        );
+      } else {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === agentMsg.id ? { ...m, content: "Agent execution failed. Check authentication." } : m,
+          ),
+        );
+      }
     } finally {
+      if (abortRef.current === controller) abortRef.current = null;
       setIsRunning(false);
     }
+  }
+
+  function handleCancel() {
+    abortRef.current?.abort();
   }
 
   const agentInfo = AGENT_TYPES.find((a) => a.id === agentType);
 
   return (
     <div className="flex flex-col h-full bg-[#0a0a1a] text-gray-100">
+      <GuestBanner featureName="Agent runs" />
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-purple-900/40 shrink-0">
         <BrainCircuit className="w-5 h-5 text-purple-400" />
@@ -263,15 +297,25 @@ export default function AgentChat() {
             }}
             disabled={isRunning}
           />
-          <Button
-            onClick={handleSend}
-            disabled={!prompt.trim() || isRunning}
-            className="bg-purple-600 hover:bg-purple-500 h-[52px] px-4 shrink-0"
-          >
-            {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-          </Button>
+          {isRunning ? (
+            <Button
+              onClick={handleCancel}
+              className="bg-red-600 hover:bg-red-500 h-[52px] px-4 shrink-0"
+              title="Stop the current run"
+            >
+              <Square className="w-4 h-4" fill="currentColor" />
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSend}
+              disabled={!prompt.trim()}
+              className="bg-purple-600 hover:bg-purple-500 h-[52px] px-4 shrink-0"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          )}
         </div>
-        <p className="text-[10px] text-gray-600 mt-1">Enter to send · Shift+Enter for newline · agent auto-detected from prompt</p>
+        <p className="text-[10px] text-gray-600 mt-1">Enter to send · Shift+Enter for newline · agent auto-detected from prompt · click ■ to stop a run</p>
       </div>
     </div>
   );
