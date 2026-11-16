@@ -1,0 +1,58 @@
+{
+  "name": "@aetherclaw/ai-seo",
+  "version": "0.1.0",
+  "description": "Config-driven generator for AI-crawler-friendly SEO: llms.txt, robots.txt, sitemap.xml, security.txt, OG/Twitter meta, schema.org JSON-LD. Legitimate posture only — refuses cloaking, prompt injection, fake schema.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "bin": {
+    "ai-seo": "./dist/cli.js"
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsup src/index.ts src/cli.ts --format esm,cjs --dts --clean",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "seo",
+    "ai-seo",
+    "aeo",
+    "geo",
+    "llms-txt",
+    "schema.org",
+    "json-ld",
+    "open-graph",
+    "security.txt",
+    "ai-crawler"
+  ],
+  "author": "Eugene Desire Nzengou",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dnzengou/kali-webOS.git",
+    "directory": "ai-seo"
+  },
+  "homepage": "https://github.com/dnzengou/kali-webOS/tree/main/ai-seo#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0",
+    "typescript": "~5.9.3",
+    "vitest": "^4.0.16"
+  }
+}

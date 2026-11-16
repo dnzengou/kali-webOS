@@ -4,6 +4,11 @@
 > A structured, command-driven development workflow for AI coding assistants.
 > Works with: Claude (Code), GPT-4/o, Gemini, Mistral, local LLMs (Ollama, LMStudio, PicoClaw, OpenClaw).
 > Use as a skill file, system prompt prefix, or context injection.
+>
+> **Companion skill:** [EVOSKILLOPS_SKILL.md](EVOSKILLOPS_SKILL.md) is the
+> between-feature discipline (unify, security sweep, decision log) that
+> keeps PR/branch/CI state from decaying while DevFlow drives the per-feature
+> loop.
 
 ---
 

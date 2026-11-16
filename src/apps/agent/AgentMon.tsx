@@ -19,6 +19,7 @@ import {
   Server,
   Cpu,
 } from "lucide-react";
+import GuestBanner from "@/components/os/GuestBanner";
 
 const AGENT_META: Record<string, { icon: any; color: string; bg: string }> = {
   builder: { icon: Wrench, color: "text-blue-400", bg: "bg-blue-400/10 border-blue-500/20" },
@@ -44,6 +45,7 @@ export default function AgentMon() {
 
   return (
     <div className="flex flex-col h-full bg-[#0a0a1a] text-gray-100">
+      <GuestBanner featureName="Session + pipeline data" />
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-purple-900/40">
         <Activity className="w-5 h-5 text-purple-400" />
