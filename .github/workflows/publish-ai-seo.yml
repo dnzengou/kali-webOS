@@ -1,0 +1,52 @@
+name: Publish @aetherclaw/ai-seo
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run only (don't actually publish)"
+        type: boolean
+        default: false
+  push:
+    tags:
+      - "ai-seo-v*"
+
+jobs:
+  publish:
+    name: Build + publish ai-seo workspace
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      id-token: write  # for `npm publish --provenance`
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: "npm"
+          registry-url: "https://registry.npmjs.org/"
+          scope: "@aetherclaw"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Typecheck ai-seo
+        run: npm run ai-seo:typecheck
+
+      - name: Test ai-seo
+        run: npm run ai-seo:test
+
+      - name: Build ai-seo
+        run: npm run ai-seo:build
+
+      - name: Pack (sanity dry-run)
+        if: ${{ inputs.dry_run == true }}
+        working-directory: ./ai-seo
+        run: npm pack --dry-run
+
+      - name: Publish to npm
+        if: ${{ inputs.dry_run != true }}
+        working-directory: ./ai-seo
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public --provenance
