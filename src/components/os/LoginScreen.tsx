@@ -13,6 +13,7 @@ const BOOT_LINES = [
 
 export default function LoginScreen() {
   const setLocked = useOsStore((s) => s.setLocked);
+  const setGuest  = useOsStore((s) => s.setGuest);
   const [phase,    setPhase]    = useState<"boot" | "login">("boot");
   const [bootIdx,  setBootIdx]  = useState(0);
   const [password, setPassword] = useState("");
@@ -39,12 +40,24 @@ export default function LoginScreen() {
 
   const handleUnlock = () => {
     if (password === "kali" || password === "") {
+      setGuest(false);
       setLocked(false);
     } else {
       setError("Incorrect password");
       setShaking(true);
       setTimeout(() => { setShaking(false); setError(""); setPassword(""); }, 700);
     }
+  };
+
+  const handleGuest = () => {
+    setGuest(true);
+    setLocked(false);
+  };
+
+  const handleFillDemo = () => {
+    setPassword("kali");
+    setError("");
+    inputRef.current?.focus();
   };
 
   return (
@@ -118,7 +131,7 @@ export default function LoginScreen() {
                     : "1px solid rgba(255,255,255,0.1)",
                   boxShadow: "0 2px 12px rgba(0,0,0,0.3)",
                 }}
-                placeholder="Password  (default: kali)"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setError(""); }}
                 onKeyDown={(e) => e.key === "Enter" && handleUnlock()}
@@ -148,12 +161,21 @@ export default function LoginScreen() {
               Unlock
             </button>
 
-            <button
-              className="w-full text-[12px] text-white/35 hover:text-white/60 transition-colors py-1"
-              onClick={() => setLocked(false)}
-            >
-              Continue as Guest →
-            </button>
+            <div className="flex items-center justify-between text-[11px] pt-1">
+              <button
+                className="text-white/30 hover:text-white/60 transition-colors"
+                onClick={handleFillDemo}
+                tabIndex={-1}
+              >
+                Fill demo credentials
+              </button>
+              <button
+                className="text-white/35 hover:text-white/60 transition-colors"
+                onClick={handleGuest}
+              >
+                Continue as Guest →
+              </button>
+            </div>
           </div>
         </div>
       )}
