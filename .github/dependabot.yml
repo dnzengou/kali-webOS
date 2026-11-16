@@ -47,6 +47,13 @@ updates:
       # the runtime migration is reviewed.
       - dependency-name: "@hono/node-server"
         update-types: ["version-update:semver-major"]
+      # Tailwind 4 split the PostCSS plugin into @tailwindcss/postcss
+      # and renames many utility classes. Migration is a separate PR.
+      - dependency-name: "tailwindcss"
+        update-types: ["version-update:semver-major"]
+      # tailwindcss-animate 2.x needs tailwind 4; pair with the tailwind bump.
+      - dependency-name: "tailwindcss-animate"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"
