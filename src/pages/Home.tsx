@@ -9,6 +9,7 @@ import LoginScreen from "@/components/os/LoginScreen";
 import DesktopMenu from "@/components/os/DesktopMenu";
 import AltTabSwitcher from "@/components/os/AltTabSwitcher";
 import IosInstallHint from "@/components/os/IosInstallHint";
+import { useDeepLinkedWorkspace } from "@/components/os/WorkspacesLauncher";
 import AppRenderer from "@/apps";
 
 const WALLPAPERS = [
@@ -83,6 +84,9 @@ export default function Home() {
 
   const [wallpaper,   setWallpaper]   = useState(0);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+
+  // Auto-launch a workspace preset when the URL carries `?demo=<id>`.
+  useDeepLinkedWorkspace();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
