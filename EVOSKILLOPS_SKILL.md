@@ -1,4 +1,5 @@
 # EvoSkillOps — AI Development Evolution Skill
+## Version 1.1 · Portable · LLM-Agnostic · Pairs with DEVFLOW_SKILL.md
 ## Version 1.2 · Portable · LLM-Agnostic · Pairs with DEVFLOW_SKILL.md
 
 > A command-driven discipline for keeping an evolving repository healthy
@@ -348,6 +349,8 @@ sessions don't have to re-litigate.
 - A security researcher can report a bug via `security.txt` in under
   60 seconds.
 
+**First fired.** TBD — this command is reserved for a Visibility PR
+once the project's SEO posture is explicitly scoped by the owner.
 **First fired.** PR #51 shipped the inline implementation on kali-webOS.
 PR #52 then productized the recipe into `@aetherclaw/ai-seo` (see `Pz`
 below) — any project can now consume the same posture by `npm i` + one
