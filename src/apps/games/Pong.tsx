@@ -227,6 +227,13 @@ export default function Pong() {
     return () => c.removeEventListener("mousemove", onMove);
   }, []);
 
+  const startGame = useCallback(() => {
+    const diff = stateRef.current.diff;
+    stateRef.current = { ...initState(diff), diff };
+    stateRef.current.running = true;
+    setUi({ pScore: 0, cScore: 0, running: true, over: false, diff });
+  }, []);
+
   // Keyboard
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -234,14 +241,7 @@ export default function Pong() {
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  });
-
-  const startGame = useCallback(() => {
-    const diff = stateRef.current.diff;
-    stateRef.current = { ...initState(diff), diff };
-    stateRef.current.running = true;
-    setUi({ pScore: 0, cScore: 0, running: true, over: false, diff });
-  }, []);
+  }, [startGame]);
 
   const setDiff = (d: Diff) => {
     stateRef.current.diff = d;

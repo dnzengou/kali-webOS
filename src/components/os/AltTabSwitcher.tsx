@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useOsStore } from "@/store/useOsStore";
 import { getAppById } from "@/apps/registry";
 
@@ -20,7 +20,7 @@ export default function AltTabSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
   const [index, setIndex]   = useState(0);
   // Frozen ordered list captured on first Tab press — doesn't reshuffle mid-cycle.
-  const listRef = useRef<typeof windows>([]);
+  const [list, setList] = useState<typeof windows>([]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -39,7 +39,7 @@ export default function AltTabSwitcher() {
           return;
         }
         e.preventDefault();
-        listRef.current = visible;
+        setList(visible);
         // Start one past the active window so Alt+Tab goes to previous, not self.
         const startAt = visible.findIndex((w) => w.id === activeId);
         const next = e.shiftKey
@@ -53,7 +53,7 @@ export default function AltTabSwitcher() {
       // HUD already open — cycle.
       e.preventDefault();
       setIndex((i) => {
-        const n = listRef.current.length;
+        const n = list.length;
         if (!n) return 0;
         if (e.shiftKey) return (i - 1 + n) % n;
         return (i + 1) % n;
@@ -64,7 +64,7 @@ export default function AltTabSwitcher() {
       if (!isOpen) return;
       // Commit on Alt/Meta release (the chord-terminating key).
       if (e.key === "Alt" || e.key === "Meta" || e.key === "Control") {
-        const target = listRef.current[index];
+        const target = list[index];
         if (target) {
           if (target.isMinimized) restoreWindow(target.id);
           focusWindow(target.id);
@@ -81,7 +81,7 @@ export default function AltTabSwitcher() {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
     };
-  }, [isOpen, index, windows, activeId, focusWindow, restoreWindow]);
+  }, [isOpen, index, list, windows, activeId, focusWindow, restoreWindow]);
 
   if (!isOpen) return null;
 
@@ -99,7 +99,7 @@ export default function AltTabSwitcher() {
           maxWidth: "min(92vw, 720px)",
         }}
       >
-        {listRef.current.map((w, i) => {
+        {list.map((w, i) => {
           const app = getAppById(w.appId);
           if (!app) return null;
           const Icon = app.icon;

@@ -9,7 +9,7 @@ import LoginScreen from "@/components/os/LoginScreen";
 import DesktopMenu from "@/components/os/DesktopMenu";
 import AltTabSwitcher from "@/components/os/AltTabSwitcher";
 import IosInstallHint from "@/components/os/IosInstallHint";
-import { useDeepLinkedWorkspace } from "@/components/os/WorkspacesLauncher";
+import { useDeepLinkedWorkspace } from "@/components/os/useDeepLinkedWorkspace";
 import AppRenderer from "@/apps";
 
 const WALLPAPERS = [

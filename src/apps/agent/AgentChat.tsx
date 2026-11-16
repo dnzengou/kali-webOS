@@ -132,7 +132,7 @@ export default function AgentChat() {
         ),
       );
       utils.agent.listSessions.invalidate();
-    } catch (err) {
+    } catch {
       if (controller.signal.aborted) {
         setMessages((prev) =>
           prev.map((m) =>
