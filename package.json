@@ -5,6 +5,7 @@
   "type": "module",
   "workspaces": [
     "sdk",
+    "ai-seo",
     "extension",
     "vscode-extension",
     "obsidian-plugin"
@@ -31,13 +32,17 @@
     "docker:run": "docker run --rm -p 3000:3000 --env-file .env kali-webos:2.0.0",
     "sdk:build": "npm run build -w @aetherclaw/sdk",
     "sdk:publish": "npm publish -w @aetherclaw/sdk --access public",
+    "ai-seo:build": "npm run build -w @aetherclaw/ai-seo",
+    "ai-seo:test": "npm run test -w @aetherclaw/ai-seo",
+    "ai-seo:typecheck": "npm run typecheck -w @aetherclaw/ai-seo",
+    "ai-seo:publish": "npm publish -w @aetherclaw/ai-seo --access public",
     "ext:build": "npm run build -w aetherclaw-extension",
     "ext:zip": "npm run zip -w aetherclaw-extension",
     "vscode:build": "npm run build -w aetherclaw-vscode",
     "vscode:package": "npm run package -w aetherclaw-vscode",
     "obsidian:build": "npm run build -w obsidian-aetherclaw",
     "obsidian:zip": "npm run zip -w obsidian-aetherclaw",
-    "evolve:build": "npm run sdk:build && npm run ext:build && npm run vscode:build && npm run obsidian:build",
+    "evolve:build": "npm run sdk:build && npm run ai-seo:build && npm run ext:build && npm run vscode:build && npm run obsidian:build",
     "evolve:dist": "npm run ext:zip && npm run vscode:package && npm run obsidian:zip"
   },
   "dependencies": {

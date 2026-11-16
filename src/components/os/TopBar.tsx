@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import {
   Wifi, WifiOff, Volume2, VolumeX, Sun, Power,
-  Lock, RotateCcw, Bolt, ChevronRight,
+  Lock, RotateCcw, Bolt, ChevronRight, Zap,
 } from "lucide-react";
 import { useOsStore } from "@/store/useOsStore";
 import { format } from "date-fns";
+import WorkspacesLauncher from "@/components/os/WorkspacesLauncher";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -35,9 +36,11 @@ export default function TopBar() {
   const [battery, setBattery] = useState<number | null>(null);
   const [charging, setCharging] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showWorkspaces, setShowWorkspaces] = useState(false);
 
   const setShowLauncher = useOsStore((s) => s.setShowLauncher);
   const setLocked       = useOsStore((s) => s.setLocked);
+  const isGuest         = useOsStore((s) => s.isGuest);
   const panelRef        = useRef<HTMLDivElement>(null);
 
   // Live clock
@@ -86,7 +89,7 @@ export default function TopBar() {
           borderBottom: "1px solid rgba(255,255,255,0.07)",
         }}
       >
-        {/* Left — Activities */}
+        {/* Left — Activities + Demos */}
         <div className="flex items-center gap-1">
           <button
             className="flex items-center gap-1.5 text-[12px] font-semibold text-white/80 hover:text-white px-2.5 py-1 rounded-md hover:bg-white/8 transition-all"
@@ -94,6 +97,14 @@ export default function TopBar() {
           >
             <Bolt size={12} className="text-[#9b59b6]" />
             Activities
+          </button>
+          <button
+            className="flex items-center gap-1.5 text-[12px] text-white/55 hover:text-white/90 px-2.5 py-1 rounded-md hover:bg-white/8 transition-all"
+            onClick={() => setShowWorkspaces(true)}
+            title="One-click workspace presets"
+          >
+            <Zap size={12} className="text-purple-300" />
+            Demos
           </button>
         </div>
 
@@ -110,6 +121,16 @@ export default function TopBar() {
 
         {/* Right — System tray */}
         <div className="flex items-center gap-2.5">
+          {isGuest && (
+            <button
+              className="text-[10px] text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full hover:border-amber-400/70 hover:text-amber-200 hover:bg-amber-500/10 transition-all flex items-center gap-1"
+              onClick={() => setLocked(true)}
+              title="You're browsing as a guest. Click to sign in."
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              Guest · Sign in
+            </button>
+          )}
           {installPrompt && (
             <button
               className="text-[10px] text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full hover:border-purple-400/60 hover:text-purple-200 transition-all"
@@ -134,6 +155,9 @@ export default function TopBar() {
           </button>
         </div>
       </div>
+
+      {/* ── Workspaces modal ── */}
+      {showWorkspaces && <WorkspacesLauncher onClose={() => setShowWorkspaces(false)} />}
 
       {/* ── Quick Settings Panel ── */}
       {panel && (
